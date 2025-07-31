@@ -1,0 +1,276 @@
+{
+  "name": "YouTube Fetch Videos Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "fetch-videos",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [0, 0],
+      "id": "webhook-start",
+      "name": "Webhook Start"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "channel-id",
+              "name": "channelID",
+              "value": "={{ $json.body.channelId }}",
+              "type": "string"
+            },
+            {
+              "id": "api-key",
+              "name": "API_KEY",
+              "value": "AIzaSyCbyc3cLDW6ef05uUOjiaX8aAvONDis0uM",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [200, 0],
+      "id": "extract-params",
+      "name": "Extract Parameters"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/youtube/v3/channels",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "part",
+              "value": "contentDetails"
+            },
+            {
+              "name": "id",
+              "value": "={{ $json.channelID }}"
+            },
+            {
+              "name": "key",
+              "value": "={{ $json.API_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [400, 0],
+      "id": "get-channel-details",
+      "name": "Get Channel Details"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract uploads playlist ID\nconst items = $input.all();\nif (!items[0]?.json?.items?.[0]?.contentDetails?.relatedPlaylists?.uploads) {\n  throw new Error('Channel not found or no uploads playlist available');\n}\n\nconst playlistId = items[0].json.items[0].contentDetails.relatedPlaylists.uploads;\nreturn [{ json: { playlistId } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [600, 0],
+      "id": "extract-playlist-id",
+      "name": "Extract Playlist ID"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/youtube/v3/playlistItems",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "part",
+              "value": "snippet"
+            },
+            {
+              "name": "playlistId",
+              "value": "={{ $json.playlistId }}"
+            },
+            {
+              "name": "maxResults",
+              "value": "50"
+            },
+            {
+              "name": "order",
+              "value": "date"
+            },
+            {
+              "name": "key",
+              "value": "={{ $('Extract Parameters').item.json.API_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [800, 0],
+      "id": "get-recent-videos",
+      "name": "Get Recent Videos"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process playlist items and get video IDs\nconst items = $input.all();\nconst videos = [];\n\nfor (const item of items) {\n  if (item.json?.items) {\n    for (const video of item.json.items.slice(0, 10)) { // Get only top 10 most recent\n      if (video.snippet?.resourceId?.videoId) {\n        videos.push({\n          videoId: video.snippet.resourceId.videoId,\n          title: video.snippet.title,\n          thumbnail: video.snippet.thumbnails?.default?.url || video.snippet.thumbnails?.medium?.url,\n          publishedAt: video.snippet.publishedAt,\n          description: video.snippet.description\n        });\n      }\n    }\n  }\n}\n\nreturn videos.map(video => ({ json: video }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1000, 0],
+      "id": "process-video-list",
+      "name": "Process Video List"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/youtube/v3/videos",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "part",
+              "value": "statistics,snippet,contentDetails"
+            },
+            {
+              "name": "id",
+              "value": "={{ $json.videoId }}"
+            },
+            {
+              "name": "key",
+              "value": "={{ $('Extract Parameters').item.json.API_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1200, 0],
+      "id": "get-video-stats",
+      "name": "Get Video Statistics"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process video statistics and calculate metrics\nconst items = $input.all();\nconst processedVideos = [];\n\nfor (const item of items) {\n  if (item.json?.items?.[0]) {\n    const video = item.json.items[0];\n    const statistics = video.statistics || {};\n    const snippet = video.snippet || {};\n    const contentDetails = video.contentDetails || {};\n    \n    const views = parseInt(statistics.viewCount || '0', 10);\n    const likes = parseInt(statistics.likeCount || '0', 10);\n    const comments = parseInt(statistics.commentCount || '0', 10);\n    \n    const publishedAt = new Date(snippet.publishedAt);\n    const now = new Date();\n    const hoursSince = Math.max(1, (now - publishedAt) / (1000 * 60 * 60));\n    const vph = parseFloat((views / hoursSince).toFixed(2));\n    \n    // Parse duration (PT4M13S format)\n    const duration = contentDetails.duration || 'PT0S';\n    const match = duration.match(/PT(?:(\\d+)H)?(?:(\\d+)M)?(?:(\\d+)S)?/);\n    const hours = parseInt(match[1] || '0', 10);\n    const minutes = parseInt(match[2] || '0', 10);\n    const seconds = parseInt(match[3] || '0', 10);\n    const totalSeconds = hours * 3600 + minutes * 60 + seconds;\n    \n    processedVideos.push({\n      id: video.id,\n      title: snippet.title,\n      thumbnail: snippet.thumbnails?.medium?.url || snippet.thumbnails?.default?.url,\n      viewCount: views,\n      likeCount: likes,\n      commentCount: comments,\n      publishedAt: snippet.publishedAt,\n      duration: totalSeconds,\n      vph: vph,\n      description: snippet.description || ''\n    });\n  }\n}\n\n// Sort by published date (most recent first)\nprocessedVideos.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));\n\nreturn [{ json: { success: true, videos: processedVideos.slice(0, 10) } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1400, 0],
+      "id": "format-response",
+      "name": "Format Response"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1600, 0],
+      "id": "webhook-response",
+      "name": "Webhook Response"
+    }
+  ],
+  "connections": {
+    "Webhook Start": {
+      "main": [
+        [
+          {
+            "node": "Extract Parameters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Parameters": {
+      "main": [
+        [
+          {
+            "node": "Get Channel Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Channel Details": {
+      "main": [
+        [
+          {
+            "node": "Extract Playlist ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Playlist ID": {
+      "main": [
+        [
+          {
+            "node": "Get Recent Videos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Recent Videos": {
+      "main": [
+        [
+          {
+            "node": "Process Video List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Video List": {
+      "main": [
+        [
+          {
+            "node": "Get Video Statistics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Video Statistics": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [
+          {
+            "node": "Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-01-31T00:00:00.000Z",
+  "versionId": ""
+}

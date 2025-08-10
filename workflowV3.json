@@ -1,0 +1,652 @@
+{
+  "name": "Content Generator v2 - Fixed Matching Images",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "fetch-videos",
+        "responseMode": "lastNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        -336,
+        -288
+      ],
+      "id": "864d5075-37f6-49c5-9a0b-5a73a1a6414a",
+      "name": "Webhook Start",
+      "webhookId": "e20a6fe3-24ce-47f9-b845-cc63f0d886c7"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "channel-url",
+              "name": "channelURL",
+              "value": "={{ $json.body.channelUrl }}",
+              "type": "string"
+            },
+            {
+              "id": "api-key",
+              "name": "API_KEY",
+              "value": "AIzaSyBQb8tbihJmrCfTb203WYsM9WpSB4dd7CY",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -160,
+        -288
+      ],
+      "id": "3fcfc872-1363-4512-82db-232a69fd5d15",
+      "name": "Extract Parameters"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract channel ID from YouTube URL\nconst channelURL = $json.channelURL;\nlet channelID = '';\n\n// Handle different YouTube URL formats\nif (channelURL.includes('youtube.com/channel/')) {\n  // Format: https://www.youtube.com/channel/UCxxxxxx\n  channelID = channelURL.split('channel/')[1].split(/[?&/]/)[0];\n} else if (channelURL.includes('youtube.com/c/')) {\n  // Format: https://www.youtube.com/c/channelname\n  // This requires an additional API call to resolve custom URL\n  channelID = channelURL.split('/c/')[1].split(/[?&/]/)[0];\n  // Mark as custom URL for later resolution\n  return [{ json: { channelID: channelID, isCustomURL: true, API_KEY: $json.API_KEY } }];\n} else if (channelURL.includes('youtube.com/@')) {\n  // Format: https://www.youtube.com/@handle\n  const handle = channelURL.split('/@')[1].split(/[?&/]/)[0];\n  return [{ json: { channelID: '@' + handle, isHandle: true, API_KEY: $json.API_KEY } }];\n} else if (channelURL.includes('youtube.com/user/')) {\n  // Format: https://www.youtube.com/user/username\n  const username = channelURL.split('/user/')[1].split(/[?&/]/)[0];\n  return [{ json: { channelID: username, isUsername: true, API_KEY: $json.API_KEY } }];\n} else if (channelURL.match(/^UC[a-zA-Z0-9_-]{22}$/)) {\n  // Direct channel ID\n  channelID = channelURL;\n} else {\n  throw new Error('Invalid YouTube channel URL format');\n}\n\nreturn [{ json: { channelID: channelID, API_KEY: $json.API_KEY } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        16,
+        -288
+      ],
+      "id": "30d11bd2-65e9-4c0a-8b95-a8269042df45",
+      "name": "Extract Channel ID"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/youtube/v3/channels",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "part",
+              "value": "contentDetails"
+            },
+            {
+              "name": "={{ $json.isUsername ? 'forUsername' : $json.isHandle ? 'forHandle' : 'id' }}",
+              "value": "={{ $json.channelID }}"
+            },
+            {
+              "name": "key",
+              "value": "={{ $json.API_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        208,
+        -288
+      ],
+      "id": "d8801ceb-e9e1-4c12-9a88-db9b901a27eb",
+      "name": "Get Channel Details"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract uploads playlist ID\nconst items = $input.all();\nif (!items[0]?.json?.items?.[0]?.contentDetails?.relatedPlaylists?.uploads) {\n  throw new Error('Channel not found or no uploads playlist available');\n}\n\nconst playlistId = items[0].json.items[0].contentDetails.relatedPlaylists.uploads;\nreturn [{ json: { playlistId } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        -288
+      ],
+      "id": "4f4b0192-3482-441e-911b-a7e11a7cdc55",
+      "name": "Extract Playlist ID"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/youtube/v3/playlistItems",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "part",
+              "value": "snippet"
+            },
+            {
+              "name": "playlistId",
+              "value": "={{ $json.playlistId }}"
+            },
+            {
+              "name": "maxResults",
+              "value": "50"
+            },
+            {
+              "name": "order",
+              "value": "date"
+            },
+            {
+              "name": "key",
+              "value": "={{ $('Extract Parameters').item.json.API_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        608,
+        -288
+      ],
+      "id": "492d3ebe-c3f1-46b8-ba23-21d95f720456",
+      "name": "Get Recent Videos"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process playlist items and get video IDs\nconst items = $input.all();\nconst videos = [];\n\nfor (const item of items) {\n  if (item.json?.items) {\n    for (const video of item.json.items.slice(0, 10)) {\n      if (video.snippet?.resourceId?.videoId) {\n        videos.push({\n          videoId: video.snippet.resourceId.videoId,\n          title: video.snippet.title,\n          thumbnail: video.snippet.thumbnails?.default?.url || video.snippet.thumbnails?.medium?.url,\n          publishedAt: video.snippet.publishedAt,\n          description: video.snippet.description\n        });\n      }\n    }\n  }\n}\n\nreturn videos.map(video => ({ json: video }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        -288
+      ],
+      "id": "0cb40ba2-2a57-43ca-ac56-dec79a5f550d",
+      "name": "Process Video List"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/youtube/v3/videos",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "part",
+              "value": "statistics,snippet,contentDetails"
+            },
+            {
+              "name": "id",
+              "value": "={{ $json.videoId }}"
+            },
+            {
+              "name": "key",
+              "value": "={{ $('Extract Parameters').item.json.API_KEY }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        992,
+        -288
+      ],
+      "id": "8451b78f-12e0-4510-ae49-4ce7b79557fe",
+      "name": "Get Video Statistics"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process video statistics and calculate metrics\nconst items = $input.all();\nconst processedVideos = [];\n\nfor (const item of items) {\n  if (item.json?.items?.[0]) {\n    const video = item.json.items[0];\n    const statistics = video.statistics || {};\n    const snippet = video.snippet || {};\n    const contentDetails = video.contentDetails || {};\n    \n    const views = parseInt(statistics.viewCount || '0', 10);\n    const likes = parseInt(statistics.likeCount || '0', 10);\n    const comments = parseInt(statistics.commentCount || '0', 10);\n    \n    const publishedAt = new Date(snippet.publishedAt);\n    const now = new Date();\n    const hoursSince = Math.max(1, (now - publishedAt) / (1000 * 60 * 60));\n    const vph = parseFloat((views / hoursSince).toFixed(2));\n    \n    // Parse duration\n    const duration = contentDetails.duration || 'PT0S';\n    const match = duration.match(/PT(?:(\\d+)H)?(?:(\\d+)M)?(?:(\\d+)S)?/);\n    const hours = parseInt(match[1] || '0', 10);\n    const minutes = parseInt(match[2] || '0', 10);\n    const seconds = parseInt(match[3] || '0', 10);\n    const totalSeconds = hours * 3600 + minutes * 60 + seconds;\n    \n    processedVideos.push({\n      id: video.id,\n      title: snippet.title,\n      thumbnail: snippet.thumbnails?.medium?.url || snippet.thumbnails?.default?.url,\n      viewCount: views,\n      likeCount: likes,\n      commentCount: comments,\n      publishedAt: snippet.publishedAt,\n      duration: totalSeconds,\n      vph: vph,\n      description: snippet.description || ''\n    });\n  }\n}\n\nprocessedVideos.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));\nconst lasttop10 = processedVideos.slice(0, 10);\n\nreturn { \n  json: { \n    success: true, \n    videos: lasttop10.sort((a, b) => b.vph - a.vph)\n  } \n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1184,
+        -288
+      ],
+      "id": "f2210e18-603f-4ae6-b874-bf43436bc39e",
+      "name": "Format Response"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1376,
+        -288
+      ],
+      "id": "b5ddef2e-40a5-48cf-914a-7443b2f4d969",
+      "name": "Webhook Response"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "process-video",
+        "responseMode": "lastNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        -272,
+        112
+      ],
+      "id": "1dccdd44-8834-4584-a889-5988b619450c",
+      "name": "Webhook Start1",
+      "webhookId": "7216b0a0-959a-41ef-84e5-02b10ffff65b"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract parameters and setup for image generation\nconst body = $json.body;\nconst selectedVideo = body.selectedVideo;\nconst selectedType = body.selectedType;\nconst selectedPrompt = body.selectedPrompt;\n\nreturn [{\n  json: {\n    videoTitle: selectedVideo.title,\n    videoId: selectedVideo.id,\n    selectedType: selectedType,\n    imagePrompt: selectedPrompt,\n    videoData: selectedVideo\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        112
+      ],
+      "id": "b93cf906-fe28-42f6-8a1b-089adf397b0c",
+      "name": "Extract & Setup"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "prompt": "={{ $json.imagePrompt }}\nThe input: {{ $json.videoTitle }}\n\nCREATE A BLACK AND WHITE COLORING PAGE ONLY:\n- Pure black outlines on white background\n- NO colors, NO shading, NO gray tones\n- Clean, thick lines suitable for children's coloring books\n- Simple, recognizable shapes that are easy to color\n- High-resolution, crisp line art\n- Subject must be clearly recognizable and centered\n- Style should be simple cartoon suitable for ages 4-8\n- Image ratio: 1792x1024\n- IMPORTANT: This will be the base template for coloring",
+        "options": {
+          "size": "1792x1024",
+          "returnImageUrls": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        176,
+        -32
+      ],
+      "id": "32bc4af2-c11d-419d-bc50-77ac941625a4",
+      "name": "Generate B&W Template",
+      "credentials": {
+        "openAiApi": {
+          "id": "0Uw2iu4BKd7gpbmg",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Download the B&W image to use as a template for coloring\nconst bwImageUrl = $json.url;\nconst revisedPrompt = $json.revised_prompt;\n\n// We need to fetch the image data to pass to the image editing endpoint\nreturn [{\n  json: {\n    bwImageUrl: bwImageUrl,\n    revisedPrompt: revisedPrompt,\n    originalPrompt: $('Extract & Setup').item.json.imagePrompt,\n    videoTitle: $('Extract & Setup').item.json.videoTitle,\n    needsColoring: true\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        384,
+        -32
+      ],
+      "id": "7803955a-238a-4d74-930f-e0acdde42120",
+      "name": "Prepare for Coloring"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.bwImageUrl }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": false,
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        576,
+        -32
+      ],
+      "id": "download-bw-image",
+      "name": "Download B&W Image"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "edit",
+        "prompt": "Add beautiful, vibrant colors to this black and white coloring page while preserving ALL the original black outlines exactly as they are.\n\nIMPORTANT COLORING RULES:\n- Keep every single black line exactly where it is\n- Do NOT change the composition, shapes, or outlines\n- Add bright, cheerful colors suitable for children\n- Use solid, vibrant colors (no gradients)\n- Fill the outlined areas with appropriate colors\n- Maintain the cartoon style\n- Background can be white or a very light pastel color\n- The result should look like a completed coloring page",
+        "image": "={{ $binary.data }}",
+        "options": {
+          "size": "1792x1024",
+          "returnImageUrls": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        768,
+        -32
+      ],
+      "id": "6c77a6bb-4827-4ee1-8966-69d8b858885d",
+      "name": "Add Colors to Template",
+      "credentials": {
+        "openAiApi": {
+          "id": "0Uw2iu4BKd7gpbmg",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4",
+          "mode": "list",
+          "cachedResultName": "GPT-4"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "Create a 700-word script for children based on the following video title. The script should be educational, engaging, and include both learning lessons and pretend play elements. Include a clear introduction and conclusion.\\n\\nVideo Title: {{ $('Extract & Setup').item.json.videoTitle }}\\n\\nMake the script in English and ensure it's age-appropriate for children aged 4-8 years old."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        96,
+        368
+      ],
+      "id": "15ae1ee8-fba5-4e39-9cc4-9ee2db816d76",
+      "name": "Generate Script",
+      "credentials": {
+        "openAiApi": {
+          "id": "0Uw2iu4BKd7gpbmg",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Combine both images data with original B&W from earlier step\nconst coloredImageUrl = $json.url;\nconst bwImageUrl = $('Prepare for Coloring').item.json.bwImageUrl;\nconst videoTitle = $('Prepare for Coloring').item.json.videoTitle;\n\nreturn [{\n  json: {\n    images: {\n      blackWhite: {\n        url: bwImageUrl,\n        type: 'black_white'\n      },\n      colored: {\n        url: coloredImageUrl,\n        type: 'colored'\n      }\n    },\n    videoTitle: videoTitle\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        -32
+      ],
+      "id": "a7eb00ce-32ac-46db-8626-5ba65d81bc13",
+      "name": "Combine Images"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1152,
+        112
+      ],
+      "id": "409519d1-3542-412e-a861-b64324b4bae6",
+      "name": "Merge All Results"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process the merged data from images and script generation\nconst items = $input.all();\nconst originalData = $('Extract & Setup').item.json;\n\nlet imagesData = null;\nlet scriptData = null;\n\n// Process merged items\nfor (let i = 0; i < items.length; i++) {\n  const item = items[i];\n  const data = item.json;\n  \n  // Check for images data\n  if (data.images && data.images.colored && data.images.blackWhite) {\n    imagesData = data.images;\n  }\n  \n  // Check for script content\n  if (data.message && data.message.content) {\n    scriptData = {\n      content: data.message.content,\n      wordCount: data.message.content.split(/\\s+/).length\n    };\n  }\n  \n  if (data.choices && data.choices[0]?.message?.content) {\n    scriptData = {\n      content: data.choices[0].message.content,\n      wordCount: data.choices[0].message.content.split(/\\s+/).length\n    };\n  }\n}\n\n// Combine all results\nconst finalResult = {\n  success: true,\n  timestamp: new Date().toISOString(),\n  data: {\n    video: {\n      title: originalData?.videoTitle || '',\n      id: originalData?.videoId || '',\n      type: originalData?.selectedType || ''\n    },\n    generatedContent: {\n      images: {\n        blackWhite: {\n          url: imagesData?.blackWhite?.url || '',\n          type: 'black_white'\n        },\n        colored: {\n          url: imagesData?.colored?.url || '',\n          type: 'colored'\n        }\n      },\n      script: {\n        content: scriptData?.content || '',\n        wordCount: scriptData?.wordCount || 0\n      }\n    },\n    processingInfo: {\n      completedAt: new Date().toISOString(),\n      status: 'completed',\n      method: 'template_based_generation'\n    }\n  }\n};\n\nreturn { json: finalResult };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        112
+      ],
+      "id": "6a91dd66-d771-441f-bf8c-719a769bd5c7",
+      "name": "Final Combine Results"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1552,
+        112
+      ],
+      "id": "a74192d6-5df5-4a1f-8a04-b82a4d8d1590",
+      "name": "Webhook Response1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Start": {
+      "main": [
+        [
+          {
+            "node": "Extract Parameters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Parameters": {
+      "main": [
+        [
+          {
+            "node": "Extract Channel ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Channel ID": {
+      "main": [
+        [
+          {
+            "node": "Get Channel Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Channel Details": {
+      "main": [
+        [
+          {
+            "node": "Extract Playlist ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Playlist ID": {
+      "main": [
+        [
+          {
+            "node": "Get Recent Videos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Recent Videos": {
+      "main": [
+        [
+          {
+            "node": "Process Video List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Video List": {
+      "main": [
+        [
+          {
+            "node": "Get Video Statistics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Video Statistics": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [
+          {
+            "node": "Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Start1": {
+      "main": [
+        [
+          {
+            "node": "Extract & Setup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract & Setup": {
+      "main": [
+        [
+          {
+            "node": "Generate B&W Template",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Generate Script",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate B&W Template": {
+      "main": [
+        [
+          {
+            "node": "Prepare for Coloring",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare for Coloring": {
+      "main": [
+        [
+          {
+            "node": "Download B&W Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download B&W Image": {
+      "main": [
+        [
+          {
+            "node": "Add Colors to Template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Colors to Template": {
+      "main": [
+        [
+          {
+            "node": "Combine Images",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Images": {
+      "main": [
+        [
+          {
+            "node": "Merge All Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Script": {
+      "main": [
+        [
+          {
+            "node": "Merge All Results",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge All Results": {
+      "main": [
+        [
+          {
+            "node": "Final Combine Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Final Combine Results": {
+      "main": [
+        [
+          {
+            "node": "Webhook Response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "45655ece-81b4-4e05-8645-cb70bfae0085",
+  "meta": {
+    "instanceId": "6565c87b9fdd037ed1eaa183b9854018000d69e2a7792e663acbb2f461a88375"
+  },
+  "id": "VZPNYOFJIPT2JAk6",
+  "tags": []
+}

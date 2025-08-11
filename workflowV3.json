@@ -1,5 +1,5 @@
 {
-  "name": "Content Generator v2 - Fixed Matching Images",
+  "name": "Content Generator v4 Fixed",
   "nodes": [
     {
       "parameters": {
@@ -13,10 +13,10 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1.1,
       "position": [
-        -336,
-        -288
+        -944,
+        -320
       ],
-      "id": "864d5075-37f6-49c5-9a0b-5a73a1a6414a",
+      "id": "4c17597a-6b5c-4fb4-a3b8-a1295f0cca65",
       "name": "Webhook Start",
       "webhookId": "e20a6fe3-24ce-47f9-b845-cc63f0d886c7"
     },
@@ -43,10 +43,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -160,
-        -288
+        -768,
+        -320
       ],
-      "id": "3fcfc872-1363-4512-82db-232a69fd5d15",
+      "id": "b667d7a6-59aa-4b2a-8c61-c01ba3bd494b",
       "name": "Extract Parameters"
     },
     {
@@ -56,10 +56,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        16,
-        -288
+        -592,
+        -320
       ],
-      "id": "30d11bd2-65e9-4c0a-8b95-a8269042df45",
+      "id": "90c5ccff-9181-40f1-bc49-646da306ff61",
       "name": "Extract Channel ID"
     },
     {
@@ -87,10 +87,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        208,
-        -288
+        -400,
+        -320
       ],
-      "id": "d8801ceb-e9e1-4c12-9a88-db9b901a27eb",
+      "id": "a0d48489-34af-4dcf-a611-2d40a9a3ef3e",
       "name": "Get Channel Details"
     },
     {
@@ -100,10 +100,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        400,
-        -288
+        -208,
+        -320
       ],
-      "id": "4f4b0192-3482-441e-911b-a7e11a7cdc55",
+      "id": "c9940fcc-d6d8-425f-8b7e-09346f9f6344",
       "name": "Extract Playlist ID"
     },
     {
@@ -139,10 +139,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        608,
-        -288
+        0,
+        -320
       ],
-      "id": "492d3ebe-c3f1-46b8-ba23-21d95f720456",
+      "id": "79a2ecd6-35d5-4b3b-a68f-2bebed8733ce",
       "name": "Get Recent Videos"
     },
     {
@@ -152,10 +152,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        800,
-        -288
+        192,
+        -320
       ],
-      "id": "0cb40ba2-2a57-43ca-ac56-dec79a5f550d",
+      "id": "03d7e233-71ec-481e-8edc-8e7cc57e6c4c",
       "name": "Process Video List"
     },
     {
@@ -183,23 +183,23 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        992,
-        -288
+        384,
+        -320
       ],
-      "id": "8451b78f-12e0-4510-ae49-4ce7b79557fe",
+      "id": "bf520011-f746-4a41-92b1-5f8891840d84",
       "name": "Get Video Statistics"
     },
     {
       "parameters": {
-        "jsCode": "// Process video statistics and calculate metrics\nconst items = $input.all();\nconst processedVideos = [];\n\nfor (const item of items) {\n  if (item.json?.items?.[0]) {\n    const video = item.json.items[0];\n    const statistics = video.statistics || {};\n    const snippet = video.snippet || {};\n    const contentDetails = video.contentDetails || {};\n    \n    const views = parseInt(statistics.viewCount || '0', 10);\n    const likes = parseInt(statistics.likeCount || '0', 10);\n    const comments = parseInt(statistics.commentCount || '0', 10);\n    \n    const publishedAt = new Date(snippet.publishedAt);\n    const now = new Date();\n    const hoursSince = Math.max(1, (now - publishedAt) / (1000 * 60 * 60));\n    const vph = parseFloat((views / hoursSince).toFixed(2));\n    \n    // Parse duration\n    const duration = contentDetails.duration || 'PT0S';\n    const match = duration.match(/PT(?:(\\d+)H)?(?:(\\d+)M)?(?:(\\d+)S)?/);\n    const hours = parseInt(match[1] || '0', 10);\n    const minutes = parseInt(match[2] || '0', 10);\n    const seconds = parseInt(match[3] || '0', 10);\n    const totalSeconds = hours * 3600 + minutes * 60 + seconds;\n    \n    processedVideos.push({\n      id: video.id,\n      title: snippet.title,\n      thumbnail: snippet.thumbnails?.medium?.url || snippet.thumbnails?.default?.url,\n      viewCount: views,\n      likeCount: likes,\n      commentCount: comments,\n      publishedAt: snippet.publishedAt,\n      duration: totalSeconds,\n      vph: vph,\n      description: snippet.description || ''\n    });\n  }\n}\n\nprocessedVideos.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));\nconst lasttop10 = processedVideos.slice(0, 10);\n\nreturn { \n  json: { \n    success: true, \n    videos: lasttop10.sort((a, b) => b.vph - a.vph)\n  } \n};"
+        "jsCode": "// Process video statistics and calculate metrics\nconst items = $input.all();\nconst processedVideos = [];\n\nfor (const item of items) {\n  if (item.json?.items?.[0]) {\n    const video = item.json.items[0];\n    const statistics = video.statistics || {};\n    const snippet = video.snippet || {};\n    const contentDetails = video.contentDetails || {};\n    \n    const views = parseInt(statistics.viewCount || '0', 10);\n    const likes = parseInt(statistics.likeCount || '0', 10);\n    const comments = parseInt(statistics.commentCount || '0', 10);\n    \n    const publishedAt = new Date(snippet.publishedAt);\n    const now = new Date();\n    const hoursSince = Math.max(1, (now - publishedAt) / (1000 * 60 * 60));\n    const vph = parseFloat((views / hoursSince).toFixed(2));\n    \n    // Parse duration\n    const duration = contentDetails.duration || 'PT0S';\n    const match = duration.match(/PT(?:(\\d+)H)?(?:(\\d+)M)?(?:(\\d+)S)?/);\n    const hours = parseInt(match[1] || '0', 10);\n    const minutes = parseInt(match[2] || '0', 10);\n    const seconds = parseInt(match[3] || '0', 10);\n    const totalSeconds = hours * 3600 + minutes * 60 + seconds;\n    \n    processedVideos.push({\n      id: video.id,\n      title: snippet.title,\n      thumbnail: snippet.thumbnails?.medium?.url || snippet.thumbnails?.default?.url,\n      viewCount: views,\n      likeCount: likes,\n      commentCount: comments,\n      publishedAt: snippet.publishedAt,\n      duration: totalSeconds,\n      vph: vph,\n      description: snippet.description || ''\n    });\n  }\n}\n\nconst lasttop30 = processedVideos.slice(0, 30);\n\nreturn { \n  json: { \n    success: true, \n    videos: lasttop30.sort((a, b) => b.vph - a.vph)\n  } \n};"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1184,
-        -288
+        576,
+        -320
       ],
-      "id": "f2210e18-603f-4ae6-b874-bf43436bc39e",
+      "id": "7907e295-03f7-49b7-84c4-cd2c2ae29307",
       "name": "Format Response"
     },
     {
@@ -211,10 +211,10 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        1376,
-        -288
+        768,
+        -320
       ],
-      "id": "b5ddef2e-40a5-48cf-914a-7443b2f4d969",
+      "id": "9e4d785f-8cbd-4c70-b788-1b528328e00b",
       "name": "Webhook Response"
     },
     {
@@ -229,30 +229,30 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1.1,
       "position": [
-        -272,
-        112
+        -880,
+        80
       ],
-      "id": "1dccdd44-8834-4584-a889-5988b619450c",
-      "name": "Webhook Start1",
+      "id": "98a83287-7050-4b3b-a99d-adac2e7ceb54",
+      "name": "Webhook Start Process",
       "webhookId": "7216b0a0-959a-41ef-84e5-02b10ffff65b"
     },
     {
       "parameters": {
-        "jsCode": "// Extract parameters and setup for image generation\nconst body = $json.body;\nconst selectedVideo = body.selectedVideo;\nconst selectedType = body.selectedType;\nconst selectedPrompt = body.selectedPrompt;\n\nreturn [{\n  json: {\n    videoTitle: selectedVideo.title,\n    videoId: selectedVideo.id,\n    selectedType: selectedType,\n    imagePrompt: selectedPrompt,\n    videoData: selectedVideo\n  }\n}];"
+        "jsCode": "// Extract parameters and setup for content generation\nconst body = $json.body;\nconst selectedVideo = body.selectedVideo;\nconst selectedType = body.selectedType;\nconst selectedPrompt = body.selectedPrompt;\n\nreturn [{\n  json: {\n    videoTitle: selectedVideo.title,\n    videoId: selectedVideo.id,\n    selectedType: selectedType,\n    imagePrompt: selectedPrompt,\n    videoData: selectedVideo\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -64,
-        112
+        -672,
+        80
       ],
-      "id": "b93cf906-fe28-42f6-8a1b-089adf397b0c",
+      "id": "f03a3427-7091-404b-a38c-f130f4058cb6",
       "name": "Extract & Setup"
     },
     {
       "parameters": {
         "resource": "image",
-        "prompt": "={{ $json.imagePrompt }}\nThe input: {{ $json.videoTitle }}\n\nCREATE A BLACK AND WHITE COLORING PAGE ONLY:\n- Pure black outlines on white background\n- NO colors, NO shading, NO gray tones\n- Clean, thick lines suitable for children's coloring books\n- Simple, recognizable shapes that are easy to color\n- High-resolution, crisp line art\n- Subject must be clearly recognizable and centered\n- Style should be simple cartoon suitable for ages 4-8\n- Image ratio: 1792x1024\n- IMPORTANT: This will be the base template for coloring",
+        "prompt": "={{ $json.imagePrompt }}\nThe input: {{ $json.videoTitle }}\nIMPORTANT: Create a high-resolution, cute cartoon-style illustration for children.\nRules:\n- Bright, cheerful, solid colors (no gradients or photo realism).\n- Thick, clean black outlines around all shapes.\n- Subject must be clearly recognizable, centered, and fill most of the frame.\n- Plain white or light pastel background (minimal distractions).\n- Style should be simple, friendly, and fun to color.\n- Maintain consistent proportions and clear separation between color regions.\n- Image ratio: 1792x1024.",
         "options": {
           "size": "1792x1024",
           "returnImageUrls": true
@@ -261,11 +261,11 @@
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 1.8,
       "position": [
-        176,
-        -32
+        -480,
+        80
       ],
-      "id": "32bc4af2-c11d-419d-bc50-77ac941625a4",
-      "name": "Generate B&W Template",
+      "id": "e17835ac-edda-4082-9bdc-a113b62c439a",
+      "name": "Generate Colored Image",
       "credentials": {
         "openAiApi": {
           "id": "0Uw2iu4BKd7gpbmg",
@@ -275,44 +275,23 @@
     },
     {
       "parameters": {
-        "jsCode": "// Download the B&W image to use as a template for coloring\nconst bwImageUrl = $json.url;\nconst revisedPrompt = $json.revised_prompt;\n\n// We need to fetch the image data to pass to the image editing endpoint\nreturn [{\n  json: {\n    bwImageUrl: bwImageUrl,\n    revisedPrompt: revisedPrompt,\n    originalPrompt: $('Extract & Setup').item.json.imagePrompt,\n    videoTitle: $('Extract & Setup').item.json.videoTitle,\n    needsColoring: true\n  }\n}];"
+        "jsCode": "// Download the image from OpenAI URL and prepare for conversion\nconst imageData = $json;\nconst originalData = $('Extract & Setup').item.json;\n\nlet imageUrl = null;\nlet coloredImageBinary = null;\n\n// Check if we got a URL or binary data\nif (imageData.url) {\n  imageUrl = imageData.url;\n  \n  // Download the image\n  const response = await fetch(imageUrl);\n  if (!response.ok) {\n    throw new Error(`Failed to download image: ${response.status}`);\n  }\n  \n  const arrayBuffer = await response.arrayBuffer();\n  coloredImageBinary = Buffer.from(arrayBuffer);\n  \n} else if ($binary?.data) {\n  // We have binary data directly\n  coloredImageBinary = $binary.data;\n} else {\n  throw new Error('No image data received from OpenAI');\n}\n\nif (!coloredImageBinary || !Buffer.isBuffer(coloredImageBinary)) {\n  throw new Error('Invalid image data received');\n}\n\n// Convert binary to base64 for the editing API\nconst base64Image = coloredImageBinary.toString('base64');\n\nreturn [{\n  json: {\n    base64Image: base64Image,\n    imageUrl: imageUrl,\n    videoTitle: originalData.videoTitle,\n    imagePrompt: originalData.imagePrompt\n  },\n  binary: {\n    coloredImage: coloredImageBinary\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        384,
-        -32
+        -272,
+        80
       ],
-      "id": "7803955a-238a-4d74-930f-e0acdde42120",
-      "name": "Prepare for Coloring"
-    },
-    {
-      "parameters": {
-        "url": "={{ $json.bwImageUrl }}",
-        "options": {
-          "response": {
-            "response": {
-              "fullResponse": false,
-              "responseFormat": "file"
-            }
-          }
-        }
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        576,
-        -32
-      ],
-      "id": "download-bw-image",
-      "name": "Download B&W Image"
+      "id": "download-image-binary",
+      "name": "Download Image Binary"
     },
     {
       "parameters": {
         "resource": "image",
         "operation": "edit",
-        "prompt": "Add beautiful, vibrant colors to this black and white coloring page while preserving ALL the original black outlines exactly as they are.\n\nIMPORTANT COLORING RULES:\n- Keep every single black line exactly where it is\n- Do NOT change the composition, shapes, or outlines\n- Add bright, cheerful colors suitable for children\n- Use solid, vibrant colors (no gradients)\n- Fill the outlined areas with appropriate colors\n- Maintain the cartoon style\n- Background can be white or a very light pastel color\n- The result should look like a completed coloring page",
-        "image": "={{ $binary.data }}",
+        "imageInput": "={{ $json.base64Image }}",
+        "prompt": "Convert this colored children's illustration into a pure black-and-white coloring book page. Keep the exact same composition, characters, poses, and details but remove ALL colors. Use only pure black outlines on a plain white background. NO colors, NO gray, NO shading, NO fills. Maintain clean, thick lines suitable for children's coloring books. Ensure all elements are clearly outlined and ready to color.",
         "options": {
           "size": "1792x1024",
           "returnImageUrls": true
@@ -321,17 +300,30 @@
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 1.8,
       "position": [
-        768,
-        -32
+        -64,
+        80
       ],
-      "id": "6c77a6bb-4827-4ee1-8966-69d8b858885d",
-      "name": "Add Colors to Template",
+      "id": "convert-to-bw",
+      "name": "Convert to B&W",
       "credentials": {
         "openAiApi": {
           "id": "0Uw2iu4BKd7gpbmg",
           "name": "OpenAi account 2"
         }
       }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Download the B&W image and create file objects\nconst bwImageData = $json;\nconst coloredImageBinary = $('Download Image Binary').item.binary.coloredImage;\nconst originalData = $('Extract & Setup').item.json;\n\nlet bwImageBinary = null;\n\n// Download B&W image\nif (bwImageData.url) {\n  const response = await fetch(bwImageData.url);\n  if (!response.ok) {\n    throw new Error(`Failed to download B&W image: ${response.status}`);\n  }\n  \n  const arrayBuffer = await response.arrayBuffer();\n  bwImageBinary = Buffer.from(arrayBuffer);\n  \n} else if ($binary?.data) {\n  bwImageBinary = $binary.data;\n} else {\n  throw new Error('No B&W image data received');\n}\n\nif (!bwImageBinary || !Buffer.isBuffer(bwImageBinary)) {\n  throw new Error('Invalid B&W image data received');\n}\n\n// Convert both images to base64\nconst coloredImageBase64 = coloredImageBinary.toString('base64');\nconst bwImageBase64 = bwImageBinary.toString('base64');\n\n// Create file objects for React client\nconst cleanTitle = originalData.videoTitle.replace(/[^a-zA-Z0-9\\s]/g, '').substring(0, 30);\n\nconst coloredImageFile = {\n  data: coloredImageBase64,\n  name: `${cleanTitle}_colored.png`,\n  type: 'image/png',\n  size: coloredImageBinary.length\n};\n\nconst bwImageFile = {\n  data: bwImageBase64,\n  name: `${cleanTitle}_coloring_page.png`,\n  type: 'image/png',\n  size: bwImageBinary.length\n};\n\nreturn [{\n  json: {\n    coloredImageFile: coloredImageFile,\n    bwImageFile: bwImageFile,\n    videoTitle: originalData.videoTitle\n  },\n  binary: {\n    coloredImage: coloredImageBinary,\n    bwImage: bwImageBinary\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        144,
+        80
+      ],
+      "id": "create-file-objects",
+      "name": "Download B&W and Create Files"
     },
     {
       "parameters": {
@@ -344,7 +336,7 @@
         "messages": {
           "values": [
             {
-              "content": "Create a 700-word script for children based on the following video title. The script should be educational, engaging, and include both learning lessons and pretend play elements. Include a clear introduction and conclusion.\\n\\nVideo Title: {{ $('Extract & Setup').item.json.videoTitle }}\\n\\nMake the script in English and ensure it's age-appropriate for children aged 4-8 years old."
+              "content": "=Create a 700-word script for children based on the following video title. The script should be educational, engaging, and include both learning lessons and pretend play elements. Include a clear introduction and conclusion.\nVideo Title: {{ $('Extract & Setup').item.json.videoTitle }}\nMake the script in English and ensure it's age-appropriate for children aged 4-8 years old."
             }
           ]
         },
@@ -353,10 +345,10 @@
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 1.8,
       "position": [
-        96,
-        368
+        -480,
+        336
       ],
-      "id": "15ae1ee8-fba5-4e39-9cc4-9ee2db816d76",
+      "id": "6e7d2dbb-29cf-4ff2-8468-7cb271e4b3d5",
       "name": "Generate Script",
       "credentials": {
         "openAiApi": {
@@ -367,19 +359,6 @@
     },
     {
       "parameters": {
-        "jsCode": "// Combine both images data with original B&W from earlier step\nconst coloredImageUrl = $json.url;\nconst bwImageUrl = $('Prepare for Coloring').item.json.bwImageUrl;\nconst videoTitle = $('Prepare for Coloring').item.json.videoTitle;\n\nreturn [{\n  json: {\n    images: {\n      blackWhite: {\n        url: bwImageUrl,\n        type: 'black_white'\n      },\n      colored: {\n        url: coloredImageUrl,\n        type: 'colored'\n      }\n    },\n    videoTitle: videoTitle\n  }\n}];"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        960,
-        -32
-      ],
-      "id": "a7eb00ce-32ac-46db-8626-5ba65d81bc13",
-      "name": "Combine Images"
-    },
-    {
-      "parameters": {
         "mode": "combine",
         "combineBy": "combineByPosition",
         "options": {}
@@ -387,23 +366,23 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        1152,
-        112
+        352,
+        240
       ],
-      "id": "409519d1-3542-412e-a861-b64324b4bae6",
+      "id": "8c696514-5224-40ca-bd89-430c0f750bd2",
       "name": "Merge All Results"
     },
     {
       "parameters": {
-        "jsCode": "// Process the merged data from images and script generation\nconst items = $input.all();\nconst originalData = $('Extract & Setup').item.json;\n\nlet imagesData = null;\nlet scriptData = null;\n\n// Process merged items\nfor (let i = 0; i < items.length; i++) {\n  const item = items[i];\n  const data = item.json;\n  \n  // Check for images data\n  if (data.images && data.images.colored && data.images.blackWhite) {\n    imagesData = data.images;\n  }\n  \n  // Check for script content\n  if (data.message && data.message.content) {\n    scriptData = {\n      content: data.message.content,\n      wordCount: data.message.content.split(/\\s+/).length\n    };\n  }\n  \n  if (data.choices && data.choices[0]?.message?.content) {\n    scriptData = {\n      content: data.choices[0].message.content,\n      wordCount: data.choices[0].message.content.split(/\\s+/).length\n    };\n  }\n}\n\n// Combine all results\nconst finalResult = {\n  success: true,\n  timestamp: new Date().toISOString(),\n  data: {\n    video: {\n      title: originalData?.videoTitle || '',\n      id: originalData?.videoId || '',\n      type: originalData?.selectedType || ''\n    },\n    generatedContent: {\n      images: {\n        blackWhite: {\n          url: imagesData?.blackWhite?.url || '',\n          type: 'black_white'\n        },\n        colored: {\n          url: imagesData?.colored?.url || '',\n          type: 'colored'\n        }\n      },\n      script: {\n        content: scriptData?.content || '',\n        wordCount: scriptData?.wordCount || 0\n      }\n    },\n    processingInfo: {\n      completedAt: new Date().toISOString(),\n      status: 'completed',\n      method: 'template_based_generation'\n    }\n  }\n};\n\nreturn { json: finalResult };"
+        "jsCode": "// Combine all generated content with file objects\nconst items = $input.all();\nconst originalData = $('Extract & Setup').item.json;\n\nlet imagesData = null;\nlet scriptData = null;\n\n// Process merged items\nfor (let i = 0; i < items.length; i++) {\n  const item = items[i];\n  const data = item.json;\n  \n  // Check for images file objects\n  if (data.coloredImageFile && data.bwImageFile) {\n    imagesData = {\n      colored: data.coloredImageFile,\n      blackWhite: data.bwImageFile\n    };\n  }\n  \n  // Check for script content\n  if (data.message && data.message.content) {\n    scriptData = {\n      content: data.message.content,\n      wordCount: data.message.content.split(/\\s+/).length\n    };\n  }\n  \n  if (data.choices && data.choices[0]?.message?.content) {\n    scriptData = {\n      content: data.choices[0].message.content,\n      wordCount: data.choices[0].message.content.split(/\\s+/).length\n    };\n  }\n}\n\n// Combine all results\nconst finalResult = {\n  success: true,\n  timestamp: new Date().toISOString(),\n  data: {\n    video: {\n      title: originalData?.videoTitle || '',\n      id: originalData?.videoId || '',\n      type: originalData?.selectedType || ''\n    },\n    generatedContent: {\n      images: imagesData,\n      script: scriptData || {\n        content: '',\n        wordCount: 0\n      }\n    },\n    processingInfo: {\n      completedAt: new Date().toISOString(),\n      status: 'completed',\n      note: 'Images are identical - B&W version created from colored version',\n      workflow: 'v4-fixed'\n    }\n  }\n};\n\nreturn { json: finalResult };"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1360,
-        112
+        560,
+        240
       ],
-      "id": "6a91dd66-d771-441f-bf8c-719a769bd5c7",
+      "id": "7d68ff9c-df48-46b9-9a86-eafd3120772b",
       "name": "Final Combine Results"
     },
     {
@@ -415,11 +394,11 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [
-        1552,
-        112
+        768,
+        240
       ],
-      "id": "a74192d6-5df5-4a1f-8a04-b82a4d8d1590",
-      "name": "Webhook Response1"
+      "id": "bc7b81b0-4947-402c-9de4-a85588bbfcbb",
+      "name": "Webhook Response Process"
     }
   ],
   "pinData": {},
@@ -523,7 +502,7 @@
         ]
       ]
     },
-    "Webhook Start1": {
+    "Webhook Start Process": {
       "main": [
         [
           {
@@ -538,7 +517,7 @@
       "main": [
         [
           {
-            "node": "Generate B&W Template",
+            "node": "Generate Colored Image",
             "type": "main",
             "index": 0
           },
@@ -550,51 +529,40 @@
         ]
       ]
     },
-    "Generate B&W Template": {
+    "Generate Colored Image": {
       "main": [
         [
           {
-            "node": "Prepare for Coloring",
+            "node": "Download Image Binary",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Prepare for Coloring": {
+    "Download Image Binary": {
       "main": [
         [
           {
-            "node": "Download B&W Image",
+            "node": "Convert to B&W",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Download B&W Image": {
+    "Convert to B&W": {
       "main": [
         [
           {
-            "node": "Add Colors to Template",
+            "node": "Download B&W and Create Files",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Add Colors to Template": {
-      "main": [
-        [
-          {
-            "node": "Combine Images",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Combine Images": {
+    "Download B&W and Create Files": {
       "main": [
         [
           {
@@ -631,7 +599,7 @@
       "main": [
         [
           {
-            "node": "Webhook Response1",
+            "node": "Webhook Response Process",
             "type": "main",
             "index": 0
           }
@@ -643,10 +611,10 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "45655ece-81b4-4e05-8645-cb70bfae0085",
+  "versionId": "fixed-v4",
   "meta": {
-    "instanceId": "6565c87b9fdd037ed1eaa183b9854018000d69e2a7792e663acbb2f461a88375"
+    "instanceId": "fixed-content-generator"
   },
-  "id": "VZPNYOFJIPT2JAk6",
+  "id": "FixedContentGen",
   "tags": []
 }

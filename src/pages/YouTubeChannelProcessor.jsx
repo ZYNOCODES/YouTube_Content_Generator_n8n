@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react'; 
 import { 
   Play, Loader2, AlertCircle, Eye, Clock, Image, FileText, 
   CheckCircle, Save, ExternalLink, Plus, X, RefreshCw,
-  ChevronDown, ChevronUp, Trash2, Check, Search, Link2, Palette, Download
+  ChevronDown, ChevronUp, Trash2, Check, Search, Link2, Download
 } from 'lucide-react';
 
 const YouTubeChannelProcessor = () => {
@@ -21,108 +21,442 @@ const YouTubeChannelProcessor = () => {
   const [expandedResults, setExpandedResults] = useState({});
   const [regeneratingItems, setRegeneratingItems] = useState({});
   const [showRegenerateModal, setShowRegenerateModal] = useState(false);
-  const [regenerateConfig, setRegenerateConfig] = useState({ video: null, type: '', prompt: '' });
-  const [selectedImageView, setSelectedImageView] = useState({});
+  const [regenerateConfig, setRegenerateConfig] = useState({ 
+    video: null, 
+    prompt: '', 
+    type: 'image' // 'image', 'script'
+  });
+  const [downloadingImages, setDownloadingImages] = useState({});
 
+  // Environment variables (replace with your actual webhook URLs)
   const N8N_WEBHOOK_FETCH = import.meta.env.VITE_APP_N8N_WEBHOOK_FETCH;
   const N8N_WEBHOOK_PROCESS = import.meta.env.VITE_APP_N8N_WEBHOOK_PROCESS;
   const GOOGLE_CLIENT_ID = import.meta.env.VITE_APP_GOOGLE_DRIVE_CLIENT_ID;
   const GOOGLE_API_KEY = import.meta.env.VITE_APP_GOOGLE_API_KEY;
+  const N8N_WEBHOOK_REGENERATE_IMAGE = import.meta.env.VITE_APP_N8N_WEBHOOK_REGENERATE_IMAGE;
+  const N8N_WEBHOOK_REGENERATE_SCRIPT = import.meta.env.VITE_APP_N8N_WEBHOOK_REGENERATE_SCRIPT;
 
+  // Updated content types to match workflow prompts
   const contentTypes = [
     {
-      id: 'IDYT',
-      name: 'IDYT - Educational',
+      id: 'LDL',
+      name: 'LDL - Draw and Learn',
       icon: '📚',
-      description: 'Learning-focused content with cartoon elements',
+      description: 'Educational drawing & learning content',
       color: 'bg-blue-500',
       borderColor: 'border-blue-500',
       bgLight: 'bg-blue-50',
-      prompt: 'generate only one image of A simple, cute cartoon-style illustration based on the input, drawn with clean black outlines. The image is designed as a coloring page for children, with no background or a plain white background. The subject should be easily recognizable, appealing, and fun to color.'
+      imagePrompt: `Create a vibrant, fully colored cartoon-style illustration at exactly 1792x1024 px.
+- Style: bold black outlines, simple rounded shapes, friendly character design suitable for children aged 4–6.
+- Palette: limit to 3–5 harmonious main colors plus neutrals (avoid many different hues). Use vivid but soft tones so the image remains calm and readable.
+- Color balance: ensure the main subject occupies ~60% visual weight with slightly warmer/more saturated colors; background ~40% with softer desaturated tones for contrast.
+- Composition: main subject clearly centered or slightly offset, large and readable at thumbnail scale.
+- Background: simple, minimal elements (large shapes, soft gradients, gentle patterns) so it doesn't compete with the subject.
+- Lighting & texture: soft lighting, subtle textures only where helpful (paper/crayon/flat cell-shading).
+- Accessibility: strong contrast between subject and background; avoid color pairings that are low-contrast for children.
+- Script-aware: use the associated scriptPrompt's tone (cheerful/educational) to select mood colors — e.g., sunny yellows/sky blues for upbeat lessons; calm greens/soft purples for soothing topics.
+- Constraints: do NOT place any on-image text unless the title explicitly requests it; avoid photographic detail; avoid more than 5 main colors.`,
+      scriptPrompt: `Write a 10-minute "Draw and Learn" YouTube script for kids aged 4-6. The video features a drawing and coloring segment of a popular kid-friendly topic.
+
+GOAL: Teach something fun and simple while a character, animal, or object is being drawn and colored.
+
+SCRIPT MUST INCLUDE:
+- Total word count between 700 and 800 words
+- Mention "drawing and coloring" 2-3 times (e.g., "It's so fun to draw and color this...")
+- Do NOT describe the step-by-step drawing process
+- Begin with a cheerful welcome
+- Include a small story or pretend play moment
+- Include simple facts or lessons about the topic
+- Include 1 funny or surprising fact or number
+- Include at least 2-3 engaging questions for the audience ("What color would YOU choose?")
+- Tone must be cheerful, playful, and warm - like a Grade 1 teacher
+- Use positive reinforcement throughout
+- Use age-appropriate, clear and simple language for 4-6-year-olds grade 1
+- Include 3 genuine, integrated CTA for subscribing at: inside the first 60 seconds, middle, and end
+
+EXAMPLE FLOW:
+[0:00-0:30] - Warm Welcome + What we're drawing today + Fun hook
+[0:30-2:30] - Start talking about the topic while we draw/color
+[2:30-4:00] - Include a mini story or pretend scene
+[4:00-6:30] - Add a few facts + a surprising/funny moment
+[6:30-8:30] - More fun details, wrap up the lesson
+[8:30-10:00] - Final thoughts + recap + warm goodbye
+
+EXTRA TIP:
+Imagine it being read by a warm, fun narrator while we watch a hand drawing and coloring something bright and familiar!
+`
     },
     {
-      id: 'IDPP',
-      name: 'IDPP - Adventure',
-      icon: '🚀',
-      description: 'Exciting adventure scenes and exploration',
-      color: 'bg-green-500',
-      borderColor: 'border-green-500',
-      bgLight: 'bg-green-50',
-      prompt: 'A simple, cute cartoon-style adventure scene based on the input, drawn with clean black outlines. The image is designed as a coloring page for children, with no background or a plain white background. The scene should be exciting, adventurous, and fun to color.'
-    },
-    {
-      id: 'IDMP',
-      name: 'IDMP - Animals',
-      icon: '🐾',
-      description: 'Cute animals and wildlife content',
+      id: 'LDPP',
+      name: 'LDPP - Princess Peppa',
+      icon: '👑',
+      description: 'Princess Peppa Pig adventures',
       color: 'bg-pink-500',
       borderColor: 'border-pink-500',
       bgLight: 'bg-pink-50',
-      prompt: 'A simple, cute cartoon-style animal illustration based on the input, drawn with clean black outlines. The image is designed as a coloring page for children, with no background or a plain white background. The animal should be adorable, child-friendly, and fun to color.'
+      imagePrompt: `Create a vibrant, fully colored cartoon-style illustration at exactly 1792x1024 px.
+- Style: bold black outlines, simple rounded shapes, friendly character design suitable for children aged 4–6.
+- Palette: limit to 3–5 harmonious main colors plus neutrals (avoid many different hues). Use vivid but soft tones so the image remains calm and readable.
+- Color balance: ensure the main subject occupies ~60% visual weight with slightly warmer/more saturated colors; background ~40% with softer desaturated tones for contrast.
+- Composition: main subject clearly centered or slightly offset, large and readable at thumbnail scale.
+- Background: simple, minimal elements (large shapes, soft gradients, gentle patterns) so it doesn't compete with the subject.
+- Lighting & texture: soft lighting, subtle textures only where helpful (paper/crayon/flat cell-shading).
+- Accessibility: strong contrast between subject and background; avoid color pairings that are low-contrast for children.
+- Script-aware: use the associated scriptPrompt's tone (cheerful/educational) to select mood colors — e.g., sunny yellows/sky blues for upbeat lessons; calm greens/soft purples for soothing topics.
+- Constraints: do NOT place any on-image text unless the title explicitly requests it; avoid photographic detail; avoid more than 5 main colors.`,
+    scriptPrompt: `Use this template to create a 700–800-word drawing-and-story voiceover script for Let’s Draw Princess Peppa, aimed at 6-year-olds. Paste the episode transcript and replace placeholders (in bold brackets) with your episode details.
+
+Read the transcript for [VIDEO TITLE] and write a script that follows this structure:
+1. Intro (0:00-0:45)
+Begin with exactly: "Hi friends, it's Mia here! Welcome back to Let's Draw Princess Pig."
+"Today our drawing is inspired by Peppa Pig's amazing video [VIDEO TITLE]! In this video it's all about [X] & [Y]."
+"Grab your crayons and paper—let's draw together! Are you ready? Let's go!"
+CTA #1 – Subscribe: "and If you love drawing and fun stories, hit Subscribe so you don't miss our next video!"
+
+2. Quick Context (0:45)
+"Let me tell you what happened in this video..."
+
+3. Story Setup (0:45-3:00)
+Describe the main idea or problem leading to the drawing moment, using short, simple, playful sentences.
+
+4. First Twist or Guess (3:00-5:30)
+Add a funny twist or surprising guess.
+Ask the audience: "What do you think happened next?"
+CTA #2 – Like: "If you think that's what really happened, give this video a big thumbs up!"
+
+5. Second Twist or Clue (5:30-8:00)
+Introduce a second surprise or clue that builds toward the drawing moment.
+
+6. Reveal + Resolution (8:00-9:30)
+Explain what actually happened and how it led to the drawing image.
+End with: "And that's the story of how this drawing happened!"
+
+7. Closing (9:30-10:00)
+CTA #3 – Subscribe: “If you love fun adventures and art, hit Subscribe so you don’t miss our next video on Let’s Draw Princess Pig!”
+Warm goodbye: “See you next time, friends—bye-bye!”
+
+Tone & Style Requirements:
+  - Word count: 700–800 words total.
+  - Language: Grade-1 level—simple, clear, playful, and warm.
+  - Focus on story only—do not describe drawing steps.
+  - Include exactly three CTAs at the marked spots.
+`
     },
     {
-      id: 'IDST',
-      name: 'IDST - Fantasy',
-      icon: '✨',
-      description: 'Magical and whimsical fantasy elements',
+      id: 'LDST',
+      name: 'LDST - Story Time',
+      icon: '📖',
+      description: 'Story-based drawing content',
       color: 'bg-purple-500',
       borderColor: 'border-purple-500',
       bgLight: 'bg-purple-50',
-      prompt: 'A simple, cute cartoon-style fantasy illustration based on the input, drawn with clean black outlines. The image is designed as a coloring page for children, with no background or a plain white background. The fantasy elements should be magical, whimsical, and fun to color.'
+      imagePrompt: `Create a vibrant, fully colored cartoon-style illustration at exactly 1792x1024 px.
+- Style: bold black outlines, simple rounded shapes, friendly character design suitable for children aged 4–6.
+- Palette: limit to 3–5 harmonious main colors plus neutrals (avoid many different hues). Use vivid but soft tones so the image remains calm and readable.
+- Color balance: ensure the main subject occupies ~60% visual weight with slightly warmer/more saturated colors; background ~40% with softer desaturated tones for contrast.
+- Composition: main subject clearly centered or slightly offset, large and readable at thumbnail scale.
+- Background: simple, minimal elements (large shapes, soft gradients, gentle patterns) so it doesn't compete with the subject.
+- Lighting & texture: soft lighting, subtle textures only where helpful (paper/crayon/flat cell-shading).
+- Accessibility: strong contrast between subject and background; avoid color pairings that are low-contrast for children.
+- Script-aware: use the associated scriptPrompt's tone (cheerful/educational) to select mood colors — e.g., sunny yellows/sky blues for upbeat lessons; calm greens/soft purples for soothing topics.
+- Constraints: do NOT place any on-image text unless the title explicitly requests it; avoid photographic detail; avoid more than 5 main colors.`,
+      scriptPrompt: `NARRATION STRUCTURE (700-800 words)
+- Voice-over only (no "how to draw")—your narration is like chatting with a friend about a fun show you both love.
+- Grade 1 level language: simple, warm, playful, clear.
+- Tone: casual, enthusiastic—like "Hey, did you see that part?!"
+
+[Intro | 0:00-0:45]
+Start with: "Hi friends it's Mia here! Welcome back to Let's Draw a Story, today..."
+Mention what we're drawing: "Today we're drawing [character/scene] from [Episode Title]..."
+Set up the tease: "I can't believe what happened in this video—let me tell you..."
+CTA #1 – Subscribe: "If you love drawing and stories, hit Subscribe so you don't miss the next one!"
+
+[Episode Tease | 0:45-3:00]
+Summarize the setup of the episode leading to this moment.
+Keep it light and fun, as if you’re telling a friend the gist.
+Don’t spoil the ending—just enough context to build interest.
+
+[Key Moment Teaser | 3:00-5:30]
+Describe one exciting twist or funny beat from the episode.
+Ask your audience: "What do you think [character] will do next?"
+CTA #2 – Like: "If you think that's wild, give this video a big thumbs up!"
+
+[Second Tease | 5:30-8:00]
+Drop another tantalizing clue—a second twist or hint.
+Build anticipation: “But that’s not all…”
+Keep it conversational, as if leaning in to spill the next secret.
+
+[Soft Reveal + Call-Out | 8:00-9:30]
+Reveal just enough: "Here's the fun part I can share..."
+Tie back to the drawing: “And that’s exactly what inspired this picture!”
+CTA #3 – Watch the full episode
+“To see what really happens next, check the link in the description and go watch [Episode Title]!”
+
+
+[Closing | 9:30-10:00]
+Recap briefly: “Today we sketched [scene] and teased [big twist].”
+Invite them back: “Can’t wait to draw with you again!”
+CTA #4 – Subscribe / Watch:
+“Don’t forget to subscribe—and click that episode link below. See you next time on Let’s Draw a Story!”
+`
     },
     {
-      id: 'IDSO',
-      name: 'IDSO - Daily Life',
-      icon: '🏠',
-      description: 'Relatable everyday situations and activities',
-      color: 'bg-orange-500',
-      borderColor: 'border-orange-500',
-      bgLight: 'bg-orange-50',
-      prompt: 'A simple, cute cartoon-style everyday life illustration based on the input, drawn with clean black outlines. The image is designed as a coloring page for children, with no background or a plain white background. The scene should be relatable, familiar, and fun to color.'
-    },
-    {
-      id: 'IDI',
-      name: 'IDI - General',
-      icon: '🎨',
-      description: 'General creative content',
+      id: 'LDYT',
+      name: 'LDYT - YouTubers',
+      icon: '🎮',
+      description: 'Drawing popular YouTubers',
       color: 'bg-red-500',
       borderColor: 'border-red-500',
       bgLight: 'bg-red-50',
-      prompt: 'A simple, cute cartoon-style illustration based on the input, drawn with clean black outlines. The image is designed as a coloring page for children, with no background or a plain white background. The scene should be creative and fun to color.'
+      imagePrompt: `Create a vibrant, fully colored cartoon-style illustration at exactly 1792x1024 px.
+- Style: bold black outlines, simple rounded shapes, friendly character design suitable for children aged 4–6.
+- Palette: limit to 3–5 harmonious main colors plus neutrals (avoid many different hues). Use vivid but soft tones so the image remains calm and readable.
+- Color balance: ensure the main subject occupies ~60% visual weight with slightly warmer/more saturated colors; background ~40% with softer desaturated tones for contrast.
+- Composition: main subject clearly centered or slightly offset, large and readable at thumbnail scale.
+- Background: simple, minimal elements (large shapes, soft gradients, gentle patterns) so it doesn't compete with the subject.
+- Lighting & texture: soft lighting, subtle textures only where helpful (paper/crayon/flat cell-shading).
+- Accessibility: strong contrast between subject and background; avoid color pairings that are low-contrast for children.
+- Script-aware: use the associated scriptPrompt's tone (cheerful/educational) to select mood colors — e.g., sunny yellows/sky blues for upbeat lessons; calm greens/soft purples for soothing topics.
+- Constraints: do NOT place any on-image text unless the title explicitly requests it; avoid photographic detail; avoid more than 5 main colors.`,
+      scriptPrompt: `Read the transcript for [VIDEO TITLE] (link: [VIDEO URL]) and write a 700–800-word voiceover script for a drawing & coloring video on Let’s Draw Youtubers, suitable for 6-year-olds. Don’t describe how to draw—focus on the story. Structure and requirements:
+1. Intro (0:00-0:45)
+Begin: "Hi friends, it's Mia here! Welcome back to Let's Draw Youtubers. Today we're drawing [WHAT WE'RE DRAWING]—and you can find the video link in the description below!"
+Point out a fun or mysterious detail in the drawing or video transcript
+CTA #1 – Subscribe: "If you love drawing and fun stories, hit Subscribe so you don't miss our next video!"
+
+2. Story Setup (0:45-3:00)
+Introduce the main idea or problem that leads to the drawing moment using simple, warm, playful language.
+Keep sentences short and clear.
+
+3. First Twist or Guess (3:00-5:30)
+Add a funny misunderstanding or surprise.
+Ask the audience a simple question (“What do you think happened next?”).  
+✅ CTA #2 – Like: “If you think that’s what really happened, give this video a big thumbs up!”
+
+4. Second Twist or Clue (5:30-8:00)
+Introduce a second surprise that builds toward the drawing moment.
+Show how things begin to make sense.
+
+5. Reveal + Resolution (8:00-9:30)
+Explain what actually happened and how it led to the drawing moment.
+Add a sweet or silly ending line: “And that’s the story of how this drawing happened!”
+
+6. Closing (9:30-10:00)
+Recap: “Today we drew [WHAT WE DREW] and learned [KEY LESSON].”
+✅ CTA #3 – Subscribe: “If you love fun challenges and art, hit Subscribe so you don’t miss our next video on Let’s Draw Youtuberst!”
+Add one final warm goodbye.
+
+Tone & Style
+  - Grade-1 level language: simple, clear, playful, warm.
+  - Word count: 700–800 words total.
+  - Include three CTAs at specified points.
+  - Mention “video link in the description” in the intro.
+`
+    },
+    {
+      id: 'LDBM',
+      name: 'LDBM - Mr Beast',
+      icon: '💰',
+      description: 'Mr Beast challenge drawings',
+      color: 'bg-green-500',
+      borderColor: 'border-green-500',
+      bgLight: 'bg-green-50',
+      imagePrompt: `Create a vibrant, fully colored cartoon-style illustration at exactly 1792x1024 px.
+- Style: bold black outlines, simple rounded shapes, friendly character design suitable for children aged 4–6.
+- Palette: limit to 3–5 harmonious main colors plus neutrals (avoid many different hues). Use vivid but soft tones so the image remains calm and readable.
+- Color balance: ensure the main subject occupies ~60% visual weight with slightly warmer/more saturated colors; background ~40% with softer desaturated tones for contrast.
+- Composition: main subject clearly centered or slightly offset, large and readable at thumbnail scale.
+- Background: simple, minimal elements (large shapes, soft gradients, gentle patterns) so it doesn't compete with the subject.
+- Lighting & texture: soft lighting, subtle textures only where helpful (paper/crayon/flat cell-shading).
+- Accessibility: strong contrast between subject and background; avoid color pairings that are low-contrast for children.
+- Script-aware: use the associated scriptPrompt's tone (cheerful/educational) to select mood colors — e.g., sunny yellows/sky blues for upbeat lessons; calm greens/soft purples for soothing topics.
+- Constraints: do NOT place any on-image text unless the title explicitly requests it; avoid photographic detail; avoid more than 5 main colors.`,
+      scriptPrompt: `Read the transcript for [VIDEO TITLE] (link: [VIDEO URL]) and write a 700–800-word voiceover script for a drawing & coloring video on Let’s Draw Mr Beast, suitable for 6-year-olds. Don’t describe how to draw—focus on the story. Structure and requirements:
+
+1. Intro (0:00-0:45)
+Begin: "Hi friends, it's Mia here! Welcome back to Let's Draw Mr Beast. Today we're drawing [WHAT WE'RE DRAWING]—and you can find the Mr Beast video link in the description below!"
+Point out a fun or mysterious detail in the drawing.
+CTA #1 – Subscribe: "If you love drawing and fun stories, hit Subscribe so you don't miss our next video!"
+
+2. Story Setup (0:45-3:00)
+Introduce the main idea or problem that leads to the drawing moment using simple, warm, playful language.
+Keep sentences short and clear.
+
+3. First Twist or Guess (3:00-5:30)
+Add a funny misunderstanding or surprise.
+Ask the audience a simple question (“What do you think happened next?”).
+✅ CTA #2 – Like: “If you think that’s what really happened, give this video a big thumbs up!”
+
+4. Second Twist or Clue (5:30-8:00)
+Introduce a second surprise or clue that builds toward the drawing moment.
+Show how things begin to make sense.
+
+5. Reveal + Resolution (8:00-9:30)
+Explain what actually happened and how it led to the drawing moment.
+Add a sweet or silly ending line: “And that’s the story of how this drawing happened!”
+
+6. Closing (9:30-10:00)
+Recap: “Today we drew [WHAT WE DREW] and learned [KEY LESSON].”
+✅ CTA #3 – Subscribe: “If you love fun adventures and art, hit Subscribe so you don’t miss our next video on Let’s Draw Mr Beast!”
+Add one final warm goodbye.
+
+Tone & Style
+  - Grade-1 level language: simple, clear, playful, warm.
+  - Word count: 700–800 words total.
+  - Include three CTAs at specified points.
+  - Mention “video link in the description” in the intro.
+`
+    },
+    {
+      id: 'LDSO',
+      name: 'LDSO - Sing Along',
+      icon: '🎵',
+      description: 'Musical drawing content',
+      color: 'bg-orange-500',
+      borderColor: 'border-orange-500',
+      bgLight: 'bg-orange-50',
+      imagePrompt: `Create a vibrant, fully colored cartoon-style illustration at exactly 1792x1024 px.
+- Style: bold black outlines, simple rounded shapes, friendly character design suitable for children aged 4–6.
+- Palette: limit to 3–5 harmonious main colors plus neutrals (avoid many different hues). Use vivid but soft tones so the image remains calm and readable.
+- Color balance: ensure the main subject occupies ~60% visual weight with slightly warmer/more saturated colors; background ~40% with softer desaturated tones for contrast.
+- Composition: main subject clearly centered or slightly offset, large and readable at thumbnail scale.
+- Background: simple, minimal elements (large shapes, soft gradients, gentle patterns) so it doesn't compete with the subject.
+- Lighting & texture: soft lighting, subtle textures only where helpful (paper/crayon/flat cell-shading).
+- Accessibility: strong contrast between subject and background; avoid color pairings that are low-contrast for children.
+- Script-aware: use the associated scriptPrompt's tone (cheerful/educational) to select mood colors — e.g., sunny yellows/sky blues for upbeat lessons; calm greens/soft purples for soothing topics.
+- Constraints: do NOT place any on-image text unless the title explicitly requests it; avoid photographic detail; avoid more than 5 main colors.`,
+      scriptPrompt: `SUNO CHILDREN'S DRAWING SONG - PROMPT TEMPLATE
+
+Title: Let's Draw [Character or Object Name]
+Genre: Children's Pop / Educational
+Mood: [Joyful, Magical, Calm, Playful]
+Tempo: 100 BPM (adjust to 90-120 depending on energy)
+Key: C Major (or G/F Major - good for kids)
+Duration: ~4 minutes
+Vocal Style: Female voice, cheerful and warm - like a friendly cartoon teacher. Includes spoken intro + singing verses.
+Visual Reference (optional but helpful):
+Describe the character, setting, and what the audience sees while listening (e.g. a smiling cartoon moon surrounded by clouds).
+
+Prompt Body:
+A playful and educational kids’ drawing-and-sing-along song, hosted by a cheerful character named Mia. She welcomes children at the start and guides them through drawing a fun object (like a star or rainbow) using simple steps and rhyming lyrics. The music features cheerful piano, light percussion, and sparkly effects. The lyrics encourage creativity and use repetition for easy follow-along. Target age: 3–7 years old.
+
+Lyrics:
+🎤 [Intro – Spoken | 0:00–0:25]
+ Hi friends, it’s Mia here! Welcome back to Let’s Draw a Song!
+ Today we’re drawing a [friendly/silly/cute] [object name] from the classic nursery rhyme “[SONG TITLE]!”
+ This song is all about [X & Y – e.g. shapes and sparkle] — and I can’t wait to show you why this [object] is so fun to draw.
+ Grab your crayons and paper — let’s draw together!
+ If you love drawing and singing, hit Subscribe so you don’t miss the next one!
+ Did you know “[SONG TITLE]” was first published in [YEAR]? That’s over [N] years ago, and it’s still a favorite today!
+ 🎶 Alright — here comes “[SONG TITLE]!” Let’s draw and sing together!
+🎵 [Verse 1]
+ Let’s draw [OBJECT NAME] big and bright,
+ Start with shapes that feel just right!
+ Draw a [shape detail], then one more,
+ You’re doing great — let’s add some more!
+ Line by line, nice and slow,
+ Watch our drawing start to grow!
+🎵 [Chorus]
+ [SONG TITLE], let’s draw and sing,
+ See what joy a shape can bring!
+ Colors swirling, bright and fun,
+ Drawing stars for everyone!
+ Twinkle, sparkle, near and far,
+ Now we’ve made our shining star!
+🎵 [Verse 2]
+ Add some arms or shiny glow,
+ Dots and lines in rows that flow.
+ Maybe give it smiling eyes,
+ Make it wave up in the skies!
+ With each step, your drawing grows,
+ Imagination always shows!
+🎵 [Chorus] (repeat with variation)
+🎵 [Bridge]
+ Gold or purple, red or blue,
+ Any color works for you!
+ Fill it in with crayon cheer,
+ Happy artists drawing here!
+ Drawing’s fun for all to do,
+ And we love to sing with you!
+🎵 [Outro Verse]
+ Now we’re done — give a cheer,
+ You made magic, loud and clear!
+ Wave hello to what you drew,
+ It’s a star made just by you!
+ Let’s keep drawing, don’t delay —
+ We’ll be back another day!
+🎵 [Final Chorus]
+ [SONG TITLE], shine so bright,
+ Thanks for drawing light tonight!
+ Grab your crayons, sing once more,
+ We’ve got lots of fun in store!
+ [SONG TITLE], you’re our guide —
+ Let’s keep drawing side by side!
+
+Arrangement Tips:
+  - Use cheerful piano as main rhythm
+  - Add glockenspiel, triangle, or sparkle sounds on "twinkle"/"shine" lines
+  - Keep tempo steady for step-by-step drawing sync
+  - Support melody with soft bass or ukulele if needed
+  - Chorus can repeat with light variation in lyrics for memory building
+`
     }
   ];
 
   // Regeneration Functions
-  const openRegenerateModal = (video, type) => {
-    setRegenerateConfig({ video, type, prompt: '' });
+  const openRegenerateModal = (video, regenerationType = 'image') => {
+    setRegenerateConfig({ video, prompt: '', type: regenerationType });
     setShowRegenerateModal(true);
   };
 
   const regenerateContent = async () => {
-    const { video, type, prompt } = regenerateConfig;
-    if (!video || !type) return;
+    const { video, prompt, type } = regenerateConfig;
+    if (!video) return;
 
-    const regenerateId = `${video.uniqueId}-${type}`;
+    const regenerateId = `${video.uniqueId}_${type}`;
     setRegeneratingItems(prev => ({ ...prev, [regenerateId]: true }));
     setShowRegenerateModal(false);
 
     try {
-      let updatedPrompt = video.selectedPrompt;
-      if (prompt) {
-        updatedPrompt = `${video.selectedPrompt}\n\nAdditional instructions: ${prompt}`;
-      }
+      let response;
+      
+      if (type === 'image') {
+        // Find the content type for the enhanced prompt
+        const contentType = contentTypes.find(ct => ct.id === video.selectedType);
+        const enhancedPrompt = prompt ? 
+          `${contentType.imagePrompt}\n\nAdditional instructions: ${prompt}` : 
+          contentType.imagePrompt;
 
-      const response = await fetch(N8N_WEBHOOK_PROCESS, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          selectedVideo: video,
-          selectedType: video.selectedType,
-          selectedPrompt: updatedPrompt,
-          channelId: video.channelId,
-          action: 'process_video',
-        })
-      });
+        response = await fetch(N8N_WEBHOOK_REGENERATE_IMAGE, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            videoTitle: video.title,
+            videoId: video.id,
+            selectedType: video.selectedType,
+            imagePrompt: enhancedPrompt,
+            originalVideo: video
+          })
+        });
+      } else if (type === 'script') {
+        // Find the content type for the script prompt
+        const contentType = contentTypes.find(ct => ct.id === video.selectedType);
+        const fullScriptPrompt = prompt ? 
+          `${contentType.scriptPrompt}\n\nAdditional instructions: ${prompt}\n\nVideo Title: ${video.title}` : 
+          `${contentType.scriptPrompt}\n\nVideo Title: ${video.title}`;
+
+        response = await fetch(N8N_WEBHOOK_REGENERATE_SCRIPT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            videoTitle: video.title,
+            videoId: video.id,
+            selectedType: video.selectedType,
+            scriptPrompt: fullScriptPrompt,
+            originalVideo: video
+          })
+        });
+      }
 
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       
@@ -131,18 +465,25 @@ const YouTubeChannelProcessor = () => {
       if (result.success) {
         setProcessedResults(prev => prev.map(v => {
           if (v.uniqueId === video.uniqueId) {
-            return {
-              ...v,
-              result: result.data,
-              lastRegenerated: new Date().toISOString()
-            };
+            const updatedVideo = { ...v };
+            
+            if (type === 'image' && result.data?.generatedContent?.image) {
+              updatedVideo.result.generatedContent.image = result.data.generatedContent.image;
+            } else if (type === 'script' && result.data?.generatedContent?.script) {
+              updatedVideo.result.generatedContent.script = result.data.generatedContent.script;
+            }
+            
+            updatedVideo.lastRegenerated = new Date().toISOString();
+            updatedVideo.lastRegeneratedType = type;
+            
+            return updatedVideo;
           }
           return v;
         }));
       }
     } catch (err) {
-      console.error(`Failed to regenerate:`, err);
-      setError(`Failed to regenerate: ${err.message}`);
+      console.error(`Failed to regenerate ${type}:`, err);
+      setError(`Failed to regenerate ${type}: ${err.message}`);
     } finally {
       setRegeneratingItems(prev => ({ ...prev, [regenerateId]: false }));
     }
@@ -179,19 +520,18 @@ const YouTubeChannelProcessor = () => {
 
   // Extract Channel ID from URL
   const extractChannelId = (url) => {
-    // Handle different YouTube URL formats
     if (url.includes('youtube.com/channel/')) {
       return url.split('channel/')[1].split(/[?&/]/)[0];
     } else if (url.includes('youtube.com/c/')) {
-      return url; // Will be handled by the webhook
+      return url;
     } else if (url.includes('youtube.com/@')) {
-      return url; // Will be handled by the webhook
+      return url;
     } else if (url.includes('youtube.com/user/')) {
-      return url; // Will be handled by the webhook
+      return url;
     } else if (url.match(/^UC[a-zA-Z0-9_-]{22}$/)) {
-      return url; // Direct channel ID
+      return url;
     }
-    return url; // Let the webhook handle validation
+    return url;
   };
 
   // Channel Management Functions
@@ -242,7 +582,7 @@ const YouTubeChannelProcessor = () => {
         const response = await fetch(N8N_WEBHOOK_FETCH, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ channelUrl: channelUrl, action: 'fetch_videos' })
+          body: JSON.stringify({ channelUrl: channelUrl })
         });
 
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -252,7 +592,7 @@ const YouTubeChannelProcessor = () => {
           newChannelsData[channelIdentifier] = {
             channelUrl,
             channelId: channelIdentifier,
-            videos: data.videos.slice(0, 10),
+            videos: data.videos,
             fetchedAt: new Date().toISOString()
           };
         }
@@ -287,7 +627,8 @@ const YouTubeChannelProcessor = () => {
     const videoWithType = {
       ...currentVideoForType,
       selectedType: selectedType.id,
-      selectedPrompt: selectedType.prompt,
+      selectedPrompt: selectedType.imagePrompt,
+      selectedScriptPrompt: selectedType.scriptPrompt,
       typeName: selectedType.name,
       typeIcon: selectedType.icon,
       uniqueId: `${currentVideoForType.channelId}-${currentVideoForType.id}-${Date.now()}`
@@ -330,8 +671,7 @@ const YouTubeChannelProcessor = () => {
             selectedVideo: video,
             selectedType: video.selectedType,
             selectedPrompt: video.selectedPrompt,
-            channelId: video.channelId,
-            action: 'process_video'
+            selectedScriptPrompt: video.selectedScriptPrompt
           })
         });
 
@@ -365,7 +705,7 @@ const YouTubeChannelProcessor = () => {
     setStep('results');
   };
 
-  // Save to Drive Function - Enhanced for both images
+  // Save to Drive Function
   const saveToDrive = async (video) => {
     if (!video.result || !isGapiLoaded) return;
 
@@ -399,55 +739,105 @@ const YouTubeChannelProcessor = () => {
       
       const folderId = folder.result.id;
 
-      // Save script as Google Doc
+      // Save script as text file
       if (video.result?.generatedContent?.script?.content) {
-        await window.gapi.client.drive.files.create({
-          resource: {
-            name: 'Script.txt',
-            parents: [folderId],
-            mimeType: 'text/plain'
+        const boundary = '-------314159265358979323846';
+        const delimiter = "\r\n--" + boundary + "\r\n";
+        const close_delim = "\r\n--" + boundary + "--";
+
+        const metadata = {
+          'name': 'Script.txt',
+          'parents': [folderId],
+          'mimeType': 'text/plain'
+        };
+
+        const multipartRequestBody =
+          delimiter +
+          'Content-Type: application/json\r\n\r\n' +
+          JSON.stringify(metadata) +
+          delimiter +
+          'Content-Type: text/plain\r\n\r\n' +
+          video.result.generatedContent.script.content +
+          close_delim;
+
+        await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + tokenResponse.access_token,
+            'Content-Type': 'multipart/related; boundary="' + boundary + '"'
           },
-          media: {
-            mimeType: 'text/plain',
-            body: video.result.generatedContent.script.content
-          }
+          body: multipartRequestBody
         });
       }
 
-      // Save both images
-      const images = video.result?.generatedContent?.images;
-      if (images) {
-        // Save colored image
-        if (images.colored?.url) {
-          const coloredResponse = await fetch(images.colored.url);
-          const coloredBlob = await coloredResponse.blob();
-          
-          await window.gapi.client.drive.files.create({
-            resource: {
-              name: 'Colored_Image.png',
-              parents: [folderId]
-            },
-            media: {
-              mimeType: 'image/png',
-              body: coloredBlob
+      // Save image URL as text file
+      if (video.result?.generatedContent?.image?.url) {
+        try {
+          // Download the image
+          const imageResponse = await fetch(video.result.generatedContent.image.url, {
+            method: "GET",
+            mode: 'cors', // Explicitly set CORS mode
+            cache: 'no-cache',
+            headers: {
+              'Accept': 'image/png,image/jpeg,image/*,*/*'
             }
           });
-        }
-
-        // Save black & white image
-        if (images.blackWhite?.url) {
-          const bwResponse = await fetch(images.blackWhite.url);
-          const bwBlob = await bwResponse.blob();
+          console.log(imageResponse);
           
-          await window.gapi.client.drive.files.create({
-            resource: {
-              name: 'BlackWhite_ColoringPage.png',
-              parents: [folderId]
+          if (!imageResponse.ok) throw new Error('Failed to download image');
+          const imageBlob = await imageResponse.blob();
+          
+          // Prepare metadata
+          const metadata = {
+            'name': 'Image.png',
+            'parents': [folderId],
+            'mimeType': 'image/png'
+          };
+
+          // Create FormData for multipart upload
+          const formData = new FormData();
+          formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+          formData.append('file', imageBlob, 'Image.png');
+
+          // Upload to Google Drive
+          await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+            method: 'POST',
+            headers: {
+              'Authorization': 'Bearer ' + tokenResponse.access_token,
             },
-            media: {
-              mimeType: 'image/png',
-              body: bwBlob
-            }
+            body: formData
+          });
+        } catch (err) {
+          console.error('Error saving image to Drive:', err);
+          // Fallback to saving URL if image download fails
+          const boundary = '-------314159265358979323846';
+          const delimiter = "\r\n--" + boundary + "\r\n";
+          const close_delim = "\r\n--" + boundary + "--";
+
+          const metadata = {
+            'name': 'image_url.txt',
+            'parents': [folderId],
+            'mimeType': 'text/plain'
+          };
+
+          const imageInfo = `Image URL: ${video.result.generatedContent.image.url}`;
+
+          const multipartRequestBody =
+            delimiter +
+            'Content-Type: application/json\r\n\r\n' +
+            JSON.stringify(metadata) +
+            delimiter +
+            'Content-Type: text/plain\r\n\r\n' +
+            imageInfo +
+            close_delim;
+
+          await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+            method: 'POST',
+            headers: {
+              'Authorization': 'Bearer ' + tokenResponse.access_token,
+              'Content-Type': 'multipart/related; boundary="' + boundary + '"'
+            },
+            body: multipartRequestBody
           });
         }
       }
@@ -486,9 +876,7 @@ const YouTubeChannelProcessor = () => {
     setProcessedResults([]);
     setError('');
     setStep('channels');
-    setSelectedImageView({});
-  };
-
+  };  
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-blue-50 to-purple-50">
       <div className="w-full px-6 py-6">
@@ -496,11 +884,14 @@ const YouTubeChannelProcessor = () => {
           {/* Header */}
           <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 text-center">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-              YouTube Content Generator Pro
+              YouTube Content Generator
             </h1>
             <p className="text-gray-600">
-              Generate colored and B&W coloring pages with scripts from YouTube videos
+              Generate coloring images with scripts from YouTube videos
             </p>
+            {/* <p className="text-sm text-blue-600 mt-1">
+              ✨ Now with separate image and script regeneration
+            </p> */}
           </div>
 
           {/* Progress Steps */}
@@ -665,7 +1056,11 @@ const YouTubeChannelProcessor = () => {
                       <span className="ml-3 text-sm text-red-500">Error: {channelData.error}</span>
                     )}
                   </h3>
-                  
+                  {channelData.videos.length > 0 &&
+                    <p className="text-gray-600 mb-4">
+                      {`${channelData.videos.length} videos found`}
+                    </p>
+                  }
                   {channelData.videos && channelData.videos.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {channelData.videos.map((video) => {
@@ -837,10 +1232,9 @@ const YouTubeChannelProcessor = () => {
                 </div>
               </div>
 
-              {processedResults.map((video, index) => {
+              {processedResults.map((video) => {
                 const isExpanded = expandedResults[video.uniqueId];
                 const result = video.result;
-                const currentImageView = selectedImageView[video.uniqueId] || 'colored';
                 
                 return (
                   <div key={video.uniqueId} className="bg-white rounded-2xl shadow-lg mb-6 overflow-hidden">
@@ -854,9 +1248,43 @@ const YouTubeChannelProcessor = () => {
                             <p className="text-sm text-gray-600">
                               Channel: {video.channelId} • Type: {video.typeName}
                             </p>
+                            {video.lastRegenerated && (
+                              <p className="text-xs text-blue-600">
+                                Last regenerated ({video.lastRegeneratedType}): {new Date(video.lastRegenerated).toLocaleString()}
+                              </p>
+                            )}
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
+                          {/* Separate regeneration buttons */}
+                          <div className="flex space-x-1">
+                            <button
+                              onClick={() => openRegenerateModal(video, 'image')}
+                              disabled={regeneratingItems[`${video.uniqueId}_image`]}
+                              className="flex items-center px-3 py-1.5 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
+                              title="Regenerate Image Only"
+                            >
+                              {regeneratingItems[`${video.uniqueId}_image`] ? (
+                                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                              ) : (
+                                <Image className="w-4 h-4 mr-1" />
+                              )}
+                              Image
+                            </button>
+                            <button
+                              onClick={() => openRegenerateModal(video, 'script')}
+                              disabled={regeneratingItems[`${video.uniqueId}_script`]}
+                              className="flex items-center px-3 py-1.5 bg-orange-600 text-white text-sm rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50"
+                              title="Regenerate Script Only"
+                            >
+                              {regeneratingItems[`${video.uniqueId}_script`] ? (
+                                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                              ) : (
+                                <FileText className="w-4 h-4 mr-1" />
+                              )}
+                              Script
+                            </button>
+                          </div>
                           <button
                             onClick={() => deleteProcessedVideo(video.uniqueId)}
                             className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
@@ -879,138 +1307,58 @@ const YouTubeChannelProcessor = () => {
                       <div className="p-6">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                           {/* Generated Images Section */}
-                          {result.generatedContent?.images && (
+                          {result.generatedContent?.image && (
                             <div>
                               <div className="flex items-center justify-between mb-4">
                                 <h4 className="font-semibold text-gray-900 flex items-center">
                                   <Image className="w-5 h-5 mr-2" />
                                   Generated Images
                                 </h4>
-                                <div className="flex space-x-2">
-                                  <button
-                                    onClick={() => setSelectedImageView(prev => ({ ...prev, [video.uniqueId]: 'colored' }))}
-                                    className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-                                      currentImageView === 'colored' 
-                                        ? 'bg-blue-600 text-white' 
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    }`}
-                                  >
-                                    <Palette className="w-4 h-4 inline mr-1" />
-                                    Colored
-                                  </button>
-                                  <button
-                                    onClick={() => setSelectedImageView(prev => ({ ...prev, [video.uniqueId]: 'bw' }))}
-                                    className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-                                      currentImageView === 'bw' 
-                                        ? 'bg-gray-800 text-white' 
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    }`}
-                                  >
-                                    B&W
-                                  </button>
-                                </div>
                               </div>
                               
-                              {/* Image Display */}
-                              <div className="relative">
-                                {currentImageView === 'colored' && result.generatedContent.images.colored?.url && (
-                                  <div>
+                              {/* Colored Image */}
+                              {result.generatedContent.image.url && (
+                                <div className="mb-4">
+                                  <h5 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                    🎨 Colored Version
+                                  </h5>
+                                  <div className="relative">
                                     <img
-                                      src={result.generatedContent.images.colored.url}
-                                      alt="Generated colored image"
+                                      src={result.generatedContent.image?.url}
+                                      alt="Colored image"
                                       className="w-full rounded-lg border-2 border-gray-200 shadow-md"
                                     />
-                                    <a
-                                      href={result.generatedContent.images.colored.url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      download={`colored_${video.title.replace(/[^a-z0-9]/gi, '_')}.png`}
-                                      className="mt-2 inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                                    <button
+                                      onClick={() => {
+                                        // Download from URL
+                                        const link = document.createElement('a');
+                                        link.href = result.generatedContent.image.url;
+                                        link.target = '_blank';
+                                        link.rel = 'noopener noreferrer';
+                                        link.download = `${video.title.replace(/[^a-zA-Z0-9\s]/g, '').substring(0, 30)}_colored_image.png`;
+                                        document.body.appendChild(link);
+                                        link.click();
+                                        document.body.removeChild(link);
+                                      }}
+                                      disabled={downloadingImages[`colored_image.png_${Date.now()}`]}
+                                      className="mt-2 inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
                                     >
                                       <Download className="w-4 h-4 mr-1" />
                                       Download Colored
-                                    </a>
+                                    </button>
                                   </div>
-                                )}
-                                
-                                {currentImageView === 'bw' && result.generatedContent.images.blackWhite?.url && (
-                                  <div>
-                                    <img
-                                      src={result.generatedContent.images.blackWhite.url}
-                                      alt="Generated black and white coloring page"
-                                      className="w-full rounded-lg border-2 border-gray-200 shadow-md"
-                                    />
-                                    <a
-                                      href={result.generatedContent.images.blackWhite.url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      download={`coloring_page_${video.title.replace(/[^a-z0-9]/gi, '_')}.png`}
-                                      className="mt-2 inline-flex items-center px-3 py-1.5 bg-gray-800 text-white text-sm rounded-lg hover:bg-gray-900 transition-colors"
-                                    >
-                                      <Download className="w-4 h-4 mr-1" />
-                                      Download B&W
-                                    </a>
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* Both Images Preview */}
-                              <div className="mt-4 grid grid-cols-2 gap-2">
-                                <div 
-                                  className={`cursor-pointer rounded-lg overflow-hidden border-2 transition-all ${
-                                    currentImageView === 'colored' ? 'border-blue-500 shadow-lg' : 'border-gray-200'
-                                  }`}
-                                  onClick={() => setSelectedImageView(prev => ({ ...prev, [video.uniqueId]: 'colored' }))}
-                                >
-                                  {result.generatedContent.images.colored?.url && (
-                                    <img
-                                      src={result.generatedContent.images.colored.url}
-                                      alt="Colored thumbnail"
-                                      className="w-full h-24 object-cover"
-                                    />
-                                  )}
-                                  <p className="text-xs text-center py-1 bg-gray-50">Colored</p>
                                 </div>
-                                <div 
-                                  className={`cursor-pointer rounded-lg overflow-hidden border-2 transition-all ${
-                                    currentImageView === 'bw' ? 'border-gray-800 shadow-lg' : 'border-gray-200'
-                                  }`}
-                                  onClick={() => setSelectedImageView(prev => ({ ...prev, [video.uniqueId]: 'bw' }))}
-                                >
-                                  {result.generatedContent.images.blackWhite?.url && (
-                                    <img
-                                      src={result.generatedContent.images.blackWhite.url}
-                                      alt="B&W thumbnail"
-                                      className="w-full h-24 object-cover"
-                                    />
-                                  )}
-                                  <p className="text-xs text-center py-1 bg-gray-50">B&W</p>
-                                </div>
-                              </div>
+                              )}
                             </div>
                           )}
 
                           {/* Generated Script */}
                           {result.generatedContent?.script?.content && (
                             <div>
-                              <div className="flex items-center justify-between mb-4">
-                                <h4 className="font-semibold text-gray-900 flex items-center">
-                                  <FileText className="w-5 h-5 mr-2" />
-                                  Script ({result.generatedContent.script.wordCount || 'N/A'} words)
-                                </h4>
-                                <button
-                                  onClick={() => openRegenerateModal(video, 'script')}
-                                  disabled={regeneratingItems[`${video.uniqueId}-script`]}
-                                  className="flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-                                >
-                                  {regeneratingItems[`${video.uniqueId}-script`] ? (
-                                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                                  ) : (
-                                    <RefreshCw className="w-4 h-4 mr-1" />
-                                  )}
-                                  Regenerate
-                                </button>
-                              </div>
+                              <h4 className="font-semibold text-gray-900 flex items-center mb-4">
+                                <FileText className="w-5 h-5 mr-2" />
+                                Script ({result.generatedContent.script.wordCount || 'N/A'} words)
+                              </h4>
                               <div className="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
                                 <pre className="whitespace-pre-wrap font-sans text-sm text-gray-700">
                                   {result.generatedContent.script.content}
@@ -1029,7 +1377,7 @@ const YouTubeChannelProcessor = () => {
                               className="flex items-center px-4 py-2 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-lg hover:from-green-700 hover:to-blue-700 transition-all disabled:opacity-50"
                             >
                               <Save className="w-5 h-5 mr-2" />
-                              Save All to Google Drive
+                              Save to Google Drive
                             </button>
                           ) : (
                             <div className="flex items-center text-green-600">
@@ -1077,7 +1425,7 @@ const YouTubeChannelProcessor = () => {
             </div>
           )}
 
-          {/* Custom Regenerate Modal */}
+          {/* Enhanced Regenerate Modal */}
           {showRegenerateModal && (
             <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
               <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full transform transition-all">
@@ -1085,9 +1433,11 @@ const YouTubeChannelProcessor = () => {
                 <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-3xl p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-2xl font-bold mb-1">Regenerate Content</h3>
+                      <h3 className="text-2xl font-bold mb-1">
+                        Regenerate {regenerateConfig.type === 'image' ? 'Image' : 'Script'}
+                      </h3>
                       <p className="text-blue-100 text-sm">
-                        Regenerating for: {regenerateConfig.video?.title}
+                        For: {regenerateConfig.video?.title}
                       </p>
                     </div>
                     <button
@@ -1108,24 +1458,35 @@ const YouTubeChannelProcessor = () => {
                     <textarea
                       value={regenerateConfig.prompt}
                       onChange={(e) => setRegenerateConfig(prev => ({ ...prev, prompt: e.target.value }))}
-                      placeholder={`Add specific instructions for regeneration...
-                        Examples:
-                        - Make it more colorful
-                        - Add more details to the background
-                        - Focus on specific elements
-                        - Change the style or mood`
-                      }
+                      placeholder={regenerateConfig.type === 'image' ? 
+                        `Add specific instructions for image regeneration...
+                    Examples:
+                    - Make the outlines bolder
+                    - Add more vibrant colors
+                    - Include specific elements from the video
+                    - Adjust the composition` :
+                        `Add specific instructions for script regeneration...
+                    Examples:
+                    - Add more educational content
+                    - Include a specific lesson
+                    - Make it more interactive
+                    - Focus on a particular age group`}
                       className="w-full h-32 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors resize-none"
                     />
                   </div>
 
                   <div className="bg-gray-50 rounded-xl p-4 mb-6">
                     <h4 className="font-semibold text-gray-800 mb-2 flex items-center">
-                      <RefreshCw className="w-4 h-4 mr-2 text-blue-600" />
+                      {regenerateConfig.type === 'image' ? <Image className="w-4 h-4 mr-2 text-purple-600" /> :
+                       regenerateConfig.type === 'script' ? <FileText className="w-4 h-4 mr-2 text-orange-600" /> :
+                       <RefreshCw className="w-4 h-4 mr-2 text-blue-600" />}
                       Current Settings
                     </h4>
                     <div className="text-sm text-gray-600 space-y-1">
-                      <p><span className="font-medium">Video:</span> {regenerateConfig.video?.typeName}</p>
+                      <p><span className="font-medium">Type:</span> {regenerateConfig.video?.typeName}</p>
+                      <p><span className="font-medium">Regenerating:</span> {
+                        regenerateConfig.type === 'image' ? 'Image Only' : 'Script Only'
+                      }</p>
                     </div>
                   </div>
 
@@ -1139,10 +1500,16 @@ const YouTubeChannelProcessor = () => {
                     </button>
                     <button
                       onClick={regenerateContent}
-                      className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all font-medium flex items-center justify-center"
+                      className={`flex-1 px-4 py-3 text-white rounded-xl transition-all font-medium flex items-center justify-center ${
+                        regenerateConfig.type === 'image' ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700' :
+                        regenerateConfig.type === 'script' ? 'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700' :
+                        'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
+                      }`}
                     >
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      Regenerate {regenerateConfig.type}
+                      {regenerateConfig.type === 'image' ? <Image className="w-4 h-4 mr-2" /> :
+                       regenerateConfig.type === 'script' ? <FileText className="w-4 h-4 mr-2" /> :
+                       <RefreshCw className="w-4 h-4 mr-2" />}
+                      Regenerate {regenerateConfig.type === 'image' ? 'Image' : 'Script'}
                     </button>
                   </div>
                 </div>

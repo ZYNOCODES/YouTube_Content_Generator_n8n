@@ -27,7 +27,7 @@ const YouTubeChannelProcessor = () => {
     type: 'image' // 'image', 'script'
   });
   const [downloadingImages, setDownloadingImages] = useState({});
-
+  
   // Environment variables (replace with your actual webhook URLs)
   const N8N_WEBHOOK_FETCH = import.meta.env.VITE_APP_N8N_WEBHOOK_FETCH;
   const N8N_WEBHOOK_PROCESS = import.meta.env.VITE_APP_N8N_WEBHOOK_PROCESS;
@@ -61,7 +61,7 @@ const YouTubeChannelProcessor = () => {
 GOAL: Teach something fun and simple while a character, animal, or object is being drawn and colored.
 
 SCRIPT MUST INCLUDE:
-- Total word count between 700 and 800 words
+- Total word count between 700 and 800 words this is critical make sure you are respecting it.
 - Mention "drawing and coloring" 2-3 times (e.g., "It's so fun to draw and color this...")
 - Do NOT describe the step-by-step drawing process
 - Begin with a cheerful welcome
@@ -84,6 +84,10 @@ EXAMPLE FLOW:
 
 EXTRA TIP:
 Imagine it being read by a warm, fun narrator while we watch a hand drawing and coloring something bright and familiar!
+
+IMPORTANT ADDITION :
+- Do **not** include these instructions in the script text.
+- output only the script text.
 `
     },
     {
@@ -104,63 +108,7 @@ Imagine it being read by a warm, fun narrator while we watch a hand drawing and 
 - Accessibility: strong contrast between subject and background; avoid color pairings that are low-contrast for children.
 - Script-aware: use the associated scriptPrompt's tone (cheerful/educational) to select mood colors — e.g., sunny yellows/sky blues for upbeat lessons; calm greens/soft purples for soothing topics.
 - Constraints: do NOT place any on-image text unless the title explicitly requests it; avoid photographic detail; avoid more than 5 main colors.`,
-    scriptPrompt: `Use this template to create a 700–800-word drawing-and-story voiceover script for Let’s Draw Princess Peppa, aimed at 6-year-olds. Paste the episode transcript and replace placeholders (in bold brackets) with your episode details.
-
-Read the transcript for [VIDEO TITLE] and write a script that follows this structure:
-1. Intro (0:00-0:45)
-Begin with exactly: "Hi friends, it's Mia here! Welcome back to Let's Draw Princess Pig."
-"Today our drawing is inspired by Peppa Pig's amazing video [VIDEO TITLE]! In this video it's all about [X] & [Y]."
-"Grab your crayons and paper—let's draw together! Are you ready? Let's go!"
-CTA #1 – Subscribe: "and If you love drawing and fun stories, hit Subscribe so you don't miss our next video!"
-
-2. Quick Context (0:45)
-"Let me tell you what happened in this video..."
-
-3. Story Setup (0:45-3:00)
-Describe the main idea or problem leading to the drawing moment, using short, simple, playful sentences.
-
-4. First Twist or Guess (3:00-5:30)
-Add a funny twist or surprising guess.
-Ask the audience: "What do you think happened next?"
-CTA #2 – Like: "If you think that's what really happened, give this video a big thumbs up!"
-
-5. Second Twist or Clue (5:30-8:00)
-Introduce a second surprise or clue that builds toward the drawing moment.
-
-6. Reveal + Resolution (8:00-9:30)
-Explain what actually happened and how it led to the drawing image.
-End with: "And that's the story of how this drawing happened!"
-
-7. Closing (9:30-10:00)
-CTA #3 – Subscribe: “If you love fun adventures and art, hit Subscribe so you don’t miss our next video on Let’s Draw Princess Pig!”
-Warm goodbye: “See you next time, friends—bye-bye!”
-
-Tone & Style Requirements:
-  - Word count: 700–800 words total.
-  - Language: Grade-1 level—simple, clear, playful, and warm.
-  - Focus on story only—do not describe drawing steps.
-  - Include exactly three CTAs at the marked spots.
-`
-    },
-    {
-      id: 'LDST',
-      name: 'LDST - Story Time',
-      icon: '📖',
-      description: 'Story-based drawing content',
-      color: 'bg-purple-500',
-      borderColor: 'border-purple-500',
-      bgLight: 'bg-purple-50',
-      imagePrompt: `Create a vibrant, fully colored cartoon-style illustration at exactly 1792x1024 px.
-- Style: bold black outlines, simple rounded shapes, friendly character design suitable for children aged 4–6.
-- Palette: limit to 3–5 harmonious main colors plus neutrals (avoid many different hues). Use vivid but soft tones so the image remains calm and readable.
-- Color balance: ensure the main subject occupies ~60% visual weight with slightly warmer/more saturated colors; background ~40% with softer desaturated tones for contrast.
-- Composition: main subject clearly centered or slightly offset, large and readable at thumbnail scale.
-- Background: simple, minimal elements (large shapes, soft gradients, gentle patterns) so it doesn't compete with the subject.
-- Lighting & texture: soft lighting, subtle textures only where helpful (paper/crayon/flat cell-shading).
-- Accessibility: strong contrast between subject and background; avoid color pairings that are low-contrast for children.
-- Script-aware: use the associated scriptPrompt's tone (cheerful/educational) to select mood colors — e.g., sunny yellows/sky blues for upbeat lessons; calm greens/soft purples for soothing topics.
-- Constraints: do NOT place any on-image text unless the title explicitly requests it; avoid photographic detail; avoid more than 5 main colors.`,
-      scriptPrompt: `NARRATION STRUCTURE (700-800 words)
+    scriptPrompt: `NARRATION STRUCTURE (Total word count between 700 and 800 words this is critical make sure you are respecting it)
 - Voice-over only (no "how to draw")—your narration is like chatting with a friend about a fun show you both love.
 - Grade 1 level language: simple, warm, playful, clear.
 - Tone: casual, enthusiastic—like "Hey, did you see that part?!"
@@ -192,12 +140,78 @@ Tie back to the drawing: “And that’s exactly what inspired this picture!”
 CTA #3 – Watch the full episode
 “To see what really happens next, check the link in the description and go watch [Episode Title]!”
 
+[Closing | 9:30-10:00]
+Recap briefly: “Today we sketched [scene] and teased [big twist].”
+Invite them back: “Can’t wait to draw with you again!”
+CTA #4 – Subscribe / Watch:
+“Don’t forget to subscribe—and click that episode link below. See you next time on Let’s Draw a Story!”
+
+IMPORTANT ADDITION :
+- Keep the Grade-1 language and voice-over style.
+- Do **not** include these instructions in the script text.
+- output only the script text.
+`
+    },
+    {
+      id: 'LDST',
+      name: 'LDST - Story Time',
+      icon: '📖',
+      description: 'Story-based drawing content',
+      color: 'bg-purple-500',
+      borderColor: 'border-purple-500',
+      bgLight: 'bg-purple-50',
+      imagePrompt: `Create a vibrant, fully colored cartoon-style illustration at exactly 1792x1024 px.
+- Style: bold black outlines, simple rounded shapes, friendly character design suitable for children aged 4–6.
+- Palette: limit to 3–5 harmonious main colors plus neutrals (avoid many different hues). Use vivid but soft tones so the image remains calm and readable.
+- Color balance: ensure the main subject occupies ~60% visual weight with slightly warmer/more saturated colors; background ~40% with softer desaturated tones for contrast.
+- Composition: main subject clearly centered or slightly offset, large and readable at thumbnail scale.
+- Background: simple, minimal elements (large shapes, soft gradients, gentle patterns) so it doesn't compete with the subject.
+- Lighting & texture: soft lighting, subtle textures only where helpful (paper/crayon/flat cell-shading).
+- Accessibility: strong contrast between subject and background; avoid color pairings that are low-contrast for children.
+- Script-aware: use the associated scriptPrompt's tone (cheerful/educational) to select mood colors — e.g., sunny yellows/sky blues for upbeat lessons; calm greens/soft purples for soothing topics.
+- Constraints: do NOT place any on-image text unless the title explicitly requests it; avoid photographic detail; avoid more than 5 main colors.`,
+      scriptPrompt: `NARRATION STRUCTURE (Total word count between 700 and 800 words this is critical make sure you are respecting it)
+- Voice-over only (no "how to draw")—your narration is like chatting with a friend about a fun show you both love.
+- Grade 1 level language: simple, warm, playful, clear.
+- Tone: casual, enthusiastic—like "Hey, did you see that part?!"
+
+[Intro | 0:00-0:45]
+Start with: "Hi friends it's Mia here! Welcome back to Let's Draw a Story, today..."
+Mention what we're drawing: "Today we're drawing [character/scene] from [Episode Title]..."
+Set up the tease: "I can't believe what happened in this video—let me tell you..."
+CTA #1 – Subscribe: "If you love drawing and stories, hit Subscribe so you don't miss the next one!"
+
+[Episode Tease | 0:45-3:00]
+Summarize the setup of the episode leading to this moment.
+Keep it light and fun, as if you’re telling a friend the gist.
+Don’t spoil the ending—just enough context to build interest.
+
+[Key Moment Teaser | 3:00-5:30]
+Describe one exciting twist or funny beat from the episode.
+Ask your audience: "What do you think [character] will do next?"
+CTA #2 – Like: "If you think that's wild, give this video a big thumbs up!"
+
+[Second Tease | 5:30-8:00]
+Drop another tantalizing clue—a second twist or hint.
+Build anticipation: “But that’s not all…”
+Keep it conversational, as if leaning in to spill the next secret.
+
+[Soft Reveal + Call-Out | 8:00-9:30]
+Reveal just enough: "Here's the fun part I can share..."
+Tie back to the drawing: “And that’s exactly what inspired this picture!”
+CTA #3 – Watch the full episode
+“To see what really happens next, check the link in the description and go watch [Episode Title]!”
 
 [Closing | 9:30-10:00]
 Recap briefly: “Today we sketched [scene] and teased [big twist].”
 Invite them back: “Can’t wait to draw with you again!”
 CTA #4 – Subscribe / Watch:
 “Don’t forget to subscribe—and click that episode link below. See you next time on Let’s Draw a Story!”
+
+IMPORTANT ADDITION :
+- Keep the Grade-1 language and voice-over style.
+- Do **not** include these instructions in the script text.
+- output only the script text.
 `
     },
     {
@@ -248,9 +262,14 @@ Add one final warm goodbye.
 
 Tone & Style
   - Grade-1 level language: simple, clear, playful, warm.
-  - Word count: 700–800 words total.
+  - Total word count between 700 and 800 words this is critical make sure you are respecting it.
   - Include three CTAs at specified points.
   - Mention “video link in the description” in the intro.
+
+IMPORTANT ADDITION :
+- Maintain the three CTAs at their spots.
+- Do **not** include these instructions in the script text.
+- output only the script text.
 `
     },
     {
@@ -302,9 +321,14 @@ Add one final warm goodbye.
 
 Tone & Style
   - Grade-1 level language: simple, clear, playful, warm.
-  - Word count: 700–800 words total.
+  - Total word count between 700 and 800 words this is critical make sure you are respecting it.
   - Include three CTAs at specified points.
   - Mention “video link in the description” in the intro.
+
+IMPORTANT ADDITION :
+- Maintain the three CTAs at their spots.
+- Do **not** include these instructions in the script text.
+- output only the script text.
 `
     },
     {
@@ -390,7 +414,7 @@ Lyrics:
  Thanks for drawing light tonight!
  Grab your crayons, sing once more,
  We’ve got lots of fun in store!
- [SONG TITLE], you’re our guide —
+ [SONG TITLE], you’re our guide — 
  Let’s keep drawing side by side!
 
 Arrangement Tips:
@@ -399,6 +423,13 @@ Arrangement Tips:
   - Keep tempo steady for step-by-step drawing sync
   - Support melody with soft bass or ukulele if needed
   - Chorus can repeat with light variation in lyrics for memory building
+  - Total word count between 700 and 800 words this is critical make sure you are respecting it.
+
+IMPORTANT ADDITION :
+- Total word count between 700 and 800 words this is critical make sure you are respecting it.
+- Keep the song structure and the spoken intro; ensure language is simple and suitable for 3–7 year olds.
+- Do **not** include these instructions in the lyrics or script text.
+- Output only the script text.
 `
     }
   ];
@@ -441,9 +472,12 @@ Arrangement Tips:
       } else if (type === 'script') {
         // Find the content type for the script prompt
         const contentType = contentTypes.find(ct => ct.id === video.selectedType);
+        const scriptContent = video.result.generatedContent.script.content;
+
+        //regeneration based on prev scriptContent
         const fullScriptPrompt = prompt ? 
-          `${contentType.scriptPrompt}\n\nAdditional instructions: ${prompt}\n\nVideo Title: ${video.title}` : 
-          `${contentType.scriptPrompt}\n\nVideo Title: ${video.title}`;
+          `${scriptContent}\n\nAdditional instructions: ${prompt}\n\nVideo Title: ${video.title}\n\nRespect the base prompt structure: ${contentType.scriptPrompt}` : 
+          `Refine the following script:\n\n${scriptContent}\n\nVideo Title: ${video.title}\n\nRespect the base prompt structure: ${contentType.scriptPrompt}`;
 
         response = await fetch(N8N_WEBHOOK_REGENERATE_SCRIPT, {
           method: 'POST',
@@ -673,6 +707,8 @@ Arrangement Tips:
             selectedPrompt: video.selectedPrompt,
             selectedScriptPrompt: video.selectedScriptPrompt
           })
+        }, {
+          timeout: 300000, // 5 minutes timeout
         });
 
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -782,7 +818,6 @@ Arrangement Tips:
               'Accept': 'image/png,image/jpeg,image/*,*/*'
             }
           });
-          console.log(imageResponse);
           
           if (!imageResponse.ok) throw new Error('Failed to download image');
           const imageBlob = await imageResponse.blob();
@@ -877,6 +912,7 @@ Arrangement Tips:
     setError('');
     setStep('channels');
   };  
+  
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-blue-50 to-purple-50">
       <div className="w-full px-6 py-6">

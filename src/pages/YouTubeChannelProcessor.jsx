@@ -87,7 +87,8 @@ Imagine it being read by a warm, fun narrator while we watch a hand drawing and 
 
 IMPORTANT ADDITION :
 - Do **not** include these instructions in the script text.
-- output only the script text.
+- Respect the prompt structure.
+- Output only the script text.
 `
     },
     {
@@ -149,7 +150,8 @@ CTA #4 – Subscribe / Watch:
 IMPORTANT ADDITION :
 - Keep the Grade-1 language and voice-over style.
 - Do **not** include these instructions in the script text.
-- output only the script text.
+- Respect the prompt structure.
+- Output only the script text.
 `
     },
     {
@@ -211,7 +213,8 @@ CTA #4 – Subscribe / Watch:
 IMPORTANT ADDITION :
 - Keep the Grade-1 language and voice-over style.
 - Do **not** include these instructions in the script text.
-- output only the script text.
+- Respect the prompt structure.
+- Output only the script text.
 `
     },
     {
@@ -269,7 +272,8 @@ Tone & Style
 IMPORTANT ADDITION :
 - Maintain the three CTAs at their spots.
 - Do **not** include these instructions in the script text.
-- output only the script text.
+- Respect the prompt structure.
+- Output only the script text.
 `
     },
     {
@@ -328,7 +332,8 @@ Tone & Style
 IMPORTANT ADDITION :
 - Maintain the three CTAs at their spots.
 - Do **not** include these instructions in the script text.
-- output only the script text.
+- Respect the prompt structure.
+- Output only the script text.
 `
     },
     {
@@ -429,6 +434,7 @@ IMPORTANT ADDITION :
 - Total word count between 700 and 800 words this is critical make sure you are respecting it.
 - Keep the song structure and the spoken intro; ensure language is simple and suitable for 3–7 year olds.
 - Do **not** include these instructions in the lyrics or script text.
+- Respect the prompt structure.
 - Output only the script text.
 `
     }

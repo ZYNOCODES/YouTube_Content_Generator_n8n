@@ -23,20 +23,22 @@ const YouTubeChannelProcessor = () => {
   const [showRegenerateModal, setShowRegenerateModal] = useState(false);
   const [regenerateConfig, setRegenerateConfig] = useState({ 
     video: null, 
-    prompt: '', 
+    additionalInstructions: '', 
     type: 'image' // 'image', 'script'
   });
   const [downloadingImages, setDownloadingImages] = useState({});
+  const [activeImageTab, setActiveImageTab] = useState({}); 
+  const [savingToDrive, setSavingToDrive] = useState({}); 
+  const [batchSavingToDrive, setBatchSavingToDrive] = useState(false); 
   
-  // Environment variables (replace with your actual webhook URLs)
-  const N8N_WEBHOOK_FETCH = import.meta.env.VITE_APP_N8N_WEBHOOK_FETCH;
-  const N8N_WEBHOOK_PROCESS = import.meta.env.VITE_APP_N8N_WEBHOOK_PROCESS;
+  // Environment variables
+  const N8N_WEBHOOK_FETCH = import.meta.env.VITE_APP_N8N_WEBHOOK_FETCH;   
+  const N8N_WEBHOOK_PROCESS_VIDEO = import.meta.env.VITE_APP_N8N_WEBHOOK_PROCESS_VIDEO;
+  const N8N_WEBHOOK_PROCESS_SCRIPT = import.meta.env.VITE_APP_N8N_WEBHOOK_PROCESS_SCRIPT;
   const GOOGLE_CLIENT_ID = import.meta.env.VITE_APP_GOOGLE_DRIVE_CLIENT_ID;
   const GOOGLE_API_KEY = import.meta.env.VITE_APP_GOOGLE_API_KEY;
-  const N8N_WEBHOOK_REGENERATE_IMAGE = import.meta.env.VITE_APP_N8N_WEBHOOK_REGENERATE_IMAGE;
-  const N8N_WEBHOOK_REGENERATE_SCRIPT = import.meta.env.VITE_APP_N8N_WEBHOOK_REGENERATE_SCRIPT;
 
-  // Updated content types to match workflow prompts
+  // Content types - Content removed as requested, will be added separately
   const contentTypes = [
     {
       id: 'LDL',
@@ -46,16 +48,17 @@ const YouTubeChannelProcessor = () => {
       color: 'bg-blue-500',
       borderColor: 'border-blue-500',
       bgLight: 'bg-blue-50',
-      imagePrompt: `Create a vibrant, fully colored cartoon-style illustration at exactly 1792x1024 px.
-- Style: bold black outlines, simple rounded shapes, friendly character design suitable for children aged 4–6.
-- Palette: limit to 3–5 harmonious main colors plus neutrals (avoid many different hues). Use vivid but soft tones so the image remains calm and readable.
-- Color balance: ensure the main subject occupies ~60% visual weight with slightly warmer/more saturated colors; background ~40% with softer desaturated tones for contrast.
-- Composition: main subject clearly centered or slightly offset, large and readable at thumbnail scale.
-- Background: simple, minimal elements (large shapes, soft gradients, gentle patterns) so it doesn't compete with the subject.
-- Lighting & texture: soft lighting, subtle textures only where helpful (paper/crayon/flat cell-shading).
-- Accessibility: strong contrast between subject and background; avoid color pairings that are low-contrast for children.
-- Script-aware: use the associated scriptPrompt's tone (cheerful/educational) to select mood colors — e.g., sunny yellows/sky blues for upbeat lessons; calm greens/soft purples for soothing topics.
-- Constraints: do NOT place any on-image text unless the title explicitly requests it; avoid photographic detail; avoid more than 5 main colors.`,
+      imagePrompt: `Create a vibrant cartoon-style educational coloring page at 1920x1080 pixels (landscape) for children aged 4-8.
+
+Visual Style: Bold black outlines (2-3px), flat vector shapes, friendly cartoon aesthetic. Clean, uncluttered composition with rounded, simple forms. No gradients or textures.
+
+Color & Contrast: Limited palette of 4-6 harmonious colors plus black outlines. Vivid yet soft child-safe tones with high contrast between areas. Main subject uses warmer colors (60% visual weight), background uses softer tones (40%).
+
+Layout: Main subject centered, occupying 60-70% of canvas. Large, readable shapes that work at thumbnail size. Minimal background with simple patterns or soft shapes. Generous white space for balance.
+
+Educational Content: Based on {TITLE}, must visually teach a clear learning concept (letters, numbers, shapes, colors, counting, etc.). Include visual teaching cues and props. Use positive, smiling characters in safe, age-appropriate scenes. One clear learning focus per image.
+
+Technical: Print-ready quality, scalable edges, strong contrast for line-art conversion. Works with crayons, markers, or digital coloring. No text unless explicitly requested in title.`,
       scriptPrompt: `Write a 10-minute "Draw and Learn" YouTube script for kids aged 4-6. The video features a drawing and coloring segment of a popular kid-friendly topic.
 
 GOAL: Teach something fun and simple while a character, animal, or object is being drawn and colored.
@@ -99,16 +102,17 @@ IMPORTANT ADDITION :
       color: 'bg-pink-500',
       borderColor: 'border-pink-500',
       bgLight: 'bg-pink-50',
-      imagePrompt: `Create a vibrant, fully colored cartoon-style illustration at exactly 1792x1024 px.
-- Style: bold black outlines, simple rounded shapes, friendly character design suitable for children aged 4–6.
-- Palette: limit to 3–5 harmonious main colors plus neutrals (avoid many different hues). Use vivid but soft tones so the image remains calm and readable.
-- Color balance: ensure the main subject occupies ~60% visual weight with slightly warmer/more saturated colors; background ~40% with softer desaturated tones for contrast.
-- Composition: main subject clearly centered or slightly offset, large and readable at thumbnail scale.
-- Background: simple, minimal elements (large shapes, soft gradients, gentle patterns) so it doesn't compete with the subject.
-- Lighting & texture: soft lighting, subtle textures only where helpful (paper/crayon/flat cell-shading).
-- Accessibility: strong contrast between subject and background; avoid color pairings that are low-contrast for children.
-- Script-aware: use the associated scriptPrompt's tone (cheerful/educational) to select mood colors — e.g., sunny yellows/sky blues for upbeat lessons; calm greens/soft purples for soothing topics.
-- Constraints: do NOT place any on-image text unless the title explicitly requests it; avoid photographic detail; avoid more than 5 main colors.`,
+      imagePrompt: `Create a Princess Peppa adventure coloring page at 1920x1080 pixels (landscape) for children aged 4-8.
+
+Visual Style: Bold black outlines (2-3px), flat vector cartoon style with rounded, friendly shapes. Clean coloring-book aesthetic, no gradients or complex textures.
+
+Color Strategy: 4-6 harmonious colors plus black outlines, vivid but soft tones. High contrast between adjacent areas. Main subject warmer/saturated colors (60% visual weight), background softer/desaturated (40%).
+
+Composition: Main subject centered, occupying 60-70% of canvas. Large, identifiable shapes readable at thumbnail size. Minimal background with simple patterns or large soft shapes. Generous white space.
+
+Princess Peppa Content: Based on {TITLE}, show child-appropriate princess adventure scene. Friendly, smiling expressions with playful, non-threatening action. Include recognizable simple props (crowns, balloons, castle elements). Avoid any scary or inappropriate elements.
+
+Technical Requirements: Exactly 1920x1080px landscape, clean edges, high contrast for printing and line-art conversion. No text unless explicitly requested in title.`,
     scriptPrompt: `NARRATION STRUCTURE (Total word count between 700 and 800 words this is critical make sure you are respecting it)
 - Voice-over only (no "how to draw")—your narration is like chatting with a friend about a fun show you both love.
 - Grade 1 level language: simple, warm, playful, clear.
@@ -162,16 +166,17 @@ IMPORTANT ADDITION :
       color: 'bg-purple-500',
       borderColor: 'border-purple-500',
       bgLight: 'bg-purple-50',
-      imagePrompt: `Create a vibrant, fully colored cartoon-style illustration at exactly 1792x1024 px.
-- Style: bold black outlines, simple rounded shapes, friendly character design suitable for children aged 4–6.
-- Palette: limit to 3–5 harmonious main colors plus neutrals (avoid many different hues). Use vivid but soft tones so the image remains calm and readable.
-- Color balance: ensure the main subject occupies ~60% visual weight with slightly warmer/more saturated colors; background ~40% with softer desaturated tones for contrast.
-- Composition: main subject clearly centered or slightly offset, large and readable at thumbnail scale.
-- Background: simple, minimal elements (large shapes, soft gradients, gentle patterns) so it doesn't compete with the subject.
-- Lighting & texture: soft lighting, subtle textures only where helpful (paper/crayon/flat cell-shading).
-- Accessibility: strong contrast between subject and background; avoid color pairings that are low-contrast for children.
-- Script-aware: use the associated scriptPrompt's tone (cheerful/educational) to select mood colors — e.g., sunny yellows/sky blues for upbeat lessons; calm greens/soft purples for soothing topics.
-- Constraints: do NOT place any on-image text unless the title explicitly requests it; avoid photographic detail; avoid more than 5 main colors.`,
+      imagePrompt: `Create a story-based cartoon coloring page at 1920x1080 pixels (landscape) for children aged 4-8.
+
+Visual Style: Bold black outlines (2-3px), flat rounded shapes, clean uncluttered layout. Cartoon coloring-book aesthetic without gradients or photorealism.
+
+Color Strategy: 4-6 harmonious colors plus black outlines. Vivid yet soft tones with strong contrast between adjacent areas. Main subject warmer/saturated (60% visual weight), background softer/desaturated (40%).
+
+Composition: Main subject occupies 60-70% of canvas, centered or slightly offset. Large, simple shapes readable at thumbnail scale. Minimal background elements that support the story context.
+
+Story Content: Based on {TITLE}, illustrate one clear story moment or scene. Include 1-2 narrative clues (props or action poses) so children can infer and continue the story. Positive, expressive faces avoiding ambiguous or frightening expressions. Clear focal point emphasizing the story beat.
+
+Technical: Exactly 1920x1080px, print-ready with clean line-art. High contrast for coloring clarity. No text unless title requests it.`,
       scriptPrompt: `NARRATION STRUCTURE (Total word count between 700 and 800 words this is critical make sure you are respecting it)
 - Voice-over only (no "how to draw")—your narration is like chatting with a friend about a fun show you both love.
 - Grade 1 level language: simple, warm, playful, clear.
@@ -225,16 +230,17 @@ IMPORTANT ADDITION :
       color: 'bg-red-500',
       borderColor: 'border-red-500',
       bgLight: 'bg-red-50',
-      imagePrompt: `Create a vibrant, fully colored cartoon-style illustration at exactly 1792x1024 px.
-- Style: bold black outlines, simple rounded shapes, friendly character design suitable for children aged 4–6.
-- Palette: limit to 3–5 harmonious main colors plus neutrals (avoid many different hues). Use vivid but soft tones so the image remains calm and readable.
-- Color balance: ensure the main subject occupies ~60% visual weight with slightly warmer/more saturated colors; background ~40% with softer desaturated tones for contrast.
-- Composition: main subject clearly centered or slightly offset, large and readable at thumbnail scale.
-- Background: simple, minimal elements (large shapes, soft gradients, gentle patterns) so it doesn't compete with the subject.
-- Lighting & texture: soft lighting, subtle textures only where helpful (paper/crayon/flat cell-shading).
-- Accessibility: strong contrast between subject and background; avoid color pairings that are low-contrast for children.
-- Script-aware: use the associated scriptPrompt's tone (cheerful/educational) to select mood colors — e.g., sunny yellows/sky blues for upbeat lessons; calm greens/soft purples for soothing topics.
-- Constraints: do NOT place any on-image text unless the title explicitly requests it; avoid photographic detail; avoid more than 5 main colors.`,
+      imagePrompt: `Create a YouTuber-inspired cartoon coloring page at 1920x1080 pixels (landscape) for children aged 4-8.
+
+Visual Style: Bold black outlines (2-3px), flat simple shapes, friendly cartoon aesthetic. Stylized, child-appropriate design avoiding photographic texture.
+
+Color Strategy: 4-6 harmonious colors plus black outlines. Soft, readable tones with high contrast for easy coloring clarity.
+
+Composition: Main subject 60-70% of canvas, centered or slightly offset. Clean background with minimal supporting elements.
+
+YouTuber Content: Based on {TITLE}, depict child-friendly, stylized character doing harmless activity (gaming, drawing, holding props). Emphasize friendly expression and simplified, non-realistic features appropriate for kids. Respectful depiction suitable for children, avoiding controversial content.
+
+Technical: Exactly 1920x1080px, clean edges, high contrast for printing. No text unless explicitly requested in title.`,
       scriptPrompt: `Read the transcript for [VIDEO TITLE] (link: [VIDEO URL]) and write a 700–800-word voiceover script for a drawing & coloring video on Let’s Draw Youtubers, suitable for 6-year-olds. Don’t describe how to draw—focus on the story. Structure and requirements:
 1. Intro (0:00-0:45)
 Begin: "Hi friends, it's Mia here! Welcome back to Let's Draw Youtubers. Today we're drawing [WHAT WE'RE DRAWING]—and you can find the video link in the description below!"
@@ -284,16 +290,17 @@ IMPORTANT ADDITION :
       color: 'bg-green-500',
       borderColor: 'border-green-500',
       bgLight: 'bg-green-50',
-      imagePrompt: `Create a vibrant, fully colored cartoon-style illustration at exactly 1792x1024 px.
-- Style: bold black outlines, simple rounded shapes, friendly character design suitable for children aged 4–6.
-- Palette: limit to 3–5 harmonious main colors plus neutrals (avoid many different hues). Use vivid but soft tones so the image remains calm and readable.
-- Color balance: ensure the main subject occupies ~60% visual weight with slightly warmer/more saturated colors; background ~40% with softer desaturated tones for contrast.
-- Composition: main subject clearly centered or slightly offset, large and readable at thumbnail scale.
-- Background: simple, minimal elements (large shapes, soft gradients, gentle patterns) so it doesn't compete with the subject.
-- Lighting & texture: soft lighting, subtle textures only where helpful (paper/crayon/flat cell-shading).
-- Accessibility: strong contrast between subject and background; avoid color pairings that are low-contrast for children.
-- Script-aware: use the associated scriptPrompt's tone (cheerful/educational) to select mood colors — e.g., sunny yellows/sky blues for upbeat lessons; calm greens/soft purples for soothing topics.
-- Constraints: do NOT place any on-image text unless the title explicitly requests it; avoid photographic detail; avoid more than 5 main colors.`,
+      imagePrompt: `Create a Mr Beast challenge cartoon coloring page at 1920x1080 pixels (landscape) for children aged 4-8.
+
+Visual Style: Bold outlines (2-3px), flat rounded shapes, playful cartoon aesthetic. Clean composition avoiding photorealism.
+
+Color Strategy: 4-6 harmonious colors plus black outlines, vivid but soft tones with high contrast.
+
+Composition: Main subject occupies 60-70% of canvas, clearly centered. Minimal background with large simple shapes suggesting challenge environment.
+
+Mr Beast Challenge Content: Based on {TITLE}, represent kid-safe, simplified challenge scene (team games, treasure hunt, friendly obstacle course). Show smiling participants, friendly competition, clear non-dangerous props (flags, cones, foam objects). Avoid realistic stunts or anything encouraging risky behavior. Stylized, child-appropriate depiction.
+
+Technical: Exactly 1920x1080px, high-contrast, print-ready line art. No text unless requested.`,
       scriptPrompt: `Read the transcript for [VIDEO TITLE] (link: [VIDEO URL]) and write a 700–800-word voiceover script for a drawing & coloring video on Let’s Draw Mr Beast, suitable for 6-year-olds. Don’t describe how to draw—focus on the story. Structure and requirements:
 
 1. Intro (0:00-0:45)
@@ -344,16 +351,17 @@ IMPORTANT ADDITION :
       color: 'bg-orange-500',
       borderColor: 'border-orange-500',
       bgLight: 'bg-orange-50',
-      imagePrompt: `Create a vibrant, fully colored cartoon-style illustration at exactly 1792x1024 px.
-- Style: bold black outlines, simple rounded shapes, friendly character design suitable for children aged 4–6.
-- Palette: limit to 3–5 harmonious main colors plus neutrals (avoid many different hues). Use vivid but soft tones so the image remains calm and readable.
-- Color balance: ensure the main subject occupies ~60% visual weight with slightly warmer/more saturated colors; background ~40% with softer desaturated tones for contrast.
-- Composition: main subject clearly centered or slightly offset, large and readable at thumbnail scale.
-- Background: simple, minimal elements (large shapes, soft gradients, gentle patterns) so it doesn't compete with the subject.
-- Lighting & texture: soft lighting, subtle textures only where helpful (paper/crayon/flat cell-shading).
-- Accessibility: strong contrast between subject and background; avoid color pairings that are low-contrast for children.
-- Script-aware: use the associated scriptPrompt's tone (cheerful/educational) to select mood colors — e.g., sunny yellows/sky blues for upbeat lessons; calm greens/soft purples for soothing topics.
-- Constraints: do NOT place any on-image text unless the title explicitly requests it; avoid photographic detail; avoid more than 5 main colors.`,
+      imagePrompt: `Create a musical cartoon coloring page at 1920x1080 pixels (landscape) for children aged 4-8.
+
+Visual Style: Bold line art (2-3px), flat shapes, rounded friendly forms. Cartoon coloring-book aesthetic avoiding gradients and photographic detail.
+
+Color Strategy: 4-6 harmonious colors plus black outlines, vivid but soothing tones with strong contrast.
+
+Composition: Main subject centered, occupying 60-70% of canvas with large readable shapes. Background may include simple musical motifs (notes, waves, instruments) as large, easy-to-color shapes.
+
+Musical Content: Based on {TITLE}, depict cheerful, child-appropriate musical scene (singing animals, kids with instruments, dancing musical elements). Emphasize joyful expressions, clear oversized simple props (guitar, drum, microphone). Avoid crowded scenes, keep elements large with easy-to-fill color areas.
+
+Technical: Exactly 1920x1080px, clean edges, high contrast for printing and line-art conversion. No text unless title explicitly requests it.`,
       scriptPrompt: `SUNO CHILDREN'S DRAWING SONG - PROMPT TEMPLATE
 
 Title: Let's Draw [Character or Object Name]
@@ -442,12 +450,16 @@ IMPORTANT ADDITION :
 
   // Regeneration Functions
   const openRegenerateModal = (video, regenerationType = 'image') => {
-    setRegenerateConfig({ video, prompt: '', type: regenerationType });
+    setRegenerateConfig({ 
+      video, 
+      additionalInstructions: '', 
+      type: regenerationType 
+    });
     setShowRegenerateModal(true);
   };
 
   const regenerateContent = async () => {
-    const { video, prompt, type } = regenerateConfig;
+    const { video, additionalInstructions, type } = regenerateConfig;
     if (!video) return;
 
     const regenerateId = `${video.uniqueId}_${type}`;
@@ -458,42 +470,38 @@ IMPORTANT ADDITION :
       let response;
       
       if (type === 'image') {
-        // Find the content type for the enhanced prompt
+        // Use N8N_WEBHOOK_PROCESS_VIDEO for image regeneration
         const contentType = contentTypes.find(ct => ct.id === video.selectedType);
-        const enhancedPrompt = prompt ? 
-          `${contentType.imagePrompt}\n\nAdditional instructions: ${prompt}` : 
-          contentType.imagePrompt;
-
-        response = await fetch(N8N_WEBHOOK_REGENERATE_IMAGE, {
+        
+        response = await fetch(N8N_WEBHOOK_PROCESS_VIDEO, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            videoTitle: video.title,
-            videoId: video.id,
+            selectedVideo: {
+              ...video,
+              additionalInstructions: additionalInstructions
+            },
             selectedType: video.selectedType,
-            imagePrompt: enhancedPrompt,
-            originalVideo: video
+            selectedPrompt: contentType?.imagePrompt || video.selectedPrompt,
+            selectedScriptPrompt: contentType?.scriptPrompt || video.selectedScriptPrompt
           })
         });
       } else if (type === 'script') {
-        // Find the content type for the script prompt
+        // Use N8N_WEBHOOK_PROCESS_SCRIPT for script regeneration
         const contentType = contentTypes.find(ct => ct.id === video.selectedType);
-        const scriptContent = video.result.generatedContent.script.content;
+        const scriptContent = video.result?.generatedContent?.script?.content || '';
 
-        //regeneration based on prev scriptContent
-        const fullScriptPrompt = prompt ? 
-          `${scriptContent}\n\nAdditional instructions: ${prompt}\n\nVideo Title: ${video.title}\n\nRespect the base prompt structure: ${contentType.scriptPrompt}` : 
-          `Refine the following script:\n\n${scriptContent}\n\nVideo Title: ${video.title}\n\nRespect the base prompt structure: ${contentType.scriptPrompt}`;
+        const enhancedScriptPrompt = additionalInstructions ? 
+          `${contentType?.scriptPrompt || ''}\n\nAdditional instructions: ${additionalInstructions}\n\nPrevious script to improve:\n${scriptContent}` : 
+          contentType?.scriptPrompt || video.selectedScriptPrompt;
 
-        response = await fetch(N8N_WEBHOOK_REGENERATE_SCRIPT, {
+        response = await fetch(N8N_WEBHOOK_PROCESS_SCRIPT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            videoTitle: video.title,
-            videoId: video.id,
+            selectedVideo: video,
             selectedType: video.selectedType,
-            scriptPrompt: fullScriptPrompt,
-            originalVideo: video
+            selectedScriptPrompt: enhancedScriptPrompt
           })
         });
       }
@@ -502,24 +510,34 @@ IMPORTANT ADDITION :
       
       const result = await response.json();
       
-      if (result.success) {
+      if (result.success && result.data) {
         setProcessedResults(prev => prev.map(v => {
           if (v.uniqueId === video.uniqueId) {
-            const updatedVideo = { ...v };
+            const updatedVideo = { ...v };            
             
-            if (type === 'image' && result.data?.generatedContent?.image) {
-              updatedVideo.result.generatedContent.image = result.data.generatedContent.image;
+            if (type === 'image' && result.data?.generatedContent?.images) {
+              updatedVideo.result.generatedContent.images = result.data.generatedContent.images;
             } else if (type === 'script' && result.data?.generatedContent?.script) {
               updatedVideo.result.generatedContent.script = result.data.generatedContent.script;
             }
             
+            // KEY MODIFICATION: Mark as needing re-save and track what was regenerated
             updatedVideo.lastRegenerated = new Date().toISOString();
             updatedVideo.lastRegeneratedType = type;
+            updatedVideo.needsResave = true; // New flag to indicate content needs re-saving
+            updatedVideo.regeneratedContent = type; // Track what type of content was regenerated
+            
+            // If previously saved to Drive, mark for potential re-save
+            if (updatedVideo.savedToDrive) {
+              updatedVideo.hasUnsavedChanges = true;
+            }
             
             return updatedVideo;
           }
           return v;
         }));
+      } else {
+        throw new Error(result.message || `Failed to regenerate ${type}`);
       }
     } catch (err) {
       console.error(`Failed to regenerate ${type}:`, err);
@@ -619,6 +637,7 @@ IMPORTANT ADDITION :
       setLoading(prev => ({ ...prev, [channelIdentifier]: true }));
       
       try {
+        // Updated to use N8N_WEBHOOK_FETCH
         const response = await fetch(N8N_WEBHOOK_FETCH, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -687,7 +706,7 @@ IMPORTANT ADDITION :
     setProcessedResults(prev => prev.filter(v => v.uniqueId !== uniqueId));
   };
 
-  // Processing Functions
+  // Updated Processing Function to use both video and script endpoints
   const processAllVideos = async () => {
     if (selectedVideos.length === 0) {
       setError('Please select at least one video to process');
@@ -704,52 +723,136 @@ IMPORTANT ADDITION :
           v.uniqueId === video.uniqueId ? { ...v, status: 'processing' } : v
         ));
 
-        const response = await fetch(N8N_WEBHOOK_PROCESS, {
+        // Create AbortController for timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 600000); // 10 minutes timeout
+
+        // Step 1: Process images using N8N_WEBHOOK_PROCESS_VIDEO
+        const imageResponse = await fetch(N8N_WEBHOOK_PROCESS_VIDEO, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             selectedVideo: video,
             selectedType: video.selectedType,
             selectedPrompt: video.selectedPrompt,
-            selectedScriptPrompt: video.selectedScriptPrompt
-          })
-        }, {
-          timeout: 300000, // 5 minutes timeout
+          }),
+          signal: controller.signal
         });
 
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        if (!imageResponse.ok) throw new Error(`Image processing failed! status: ${imageResponse.status}`);
         
-        const result = await response.json();
+        const imageResult = await imageResponse.json();
+
+        // Step 2: Process script using N8N_WEBHOOK_PROCESS_SCRIPT
+        const scriptResponse = await fetch(N8N_WEBHOOK_PROCESS_SCRIPT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            selectedVideo: video,
+            selectedType: video.selectedType,
+            selectedScriptPrompt: video.selectedScriptPrompt
+          }),
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!scriptResponse.ok) throw new Error(`Script processing failed! status: ${scriptResponse.status}`);
         
-        if (result.success) {
+        const scriptResult = await scriptResponse.json();
+
+        // Combine both results
+        if (imageResult.success && scriptResult.success && imageResult.data && scriptResult.data) {
           const processedVideo = {
             ...video,
-            result: result.data,
+            result: {
+              generatedContent: {
+                images: imageResult.data.generatedContent?.images || null,
+                script: scriptResult.data.generatedContent?.script || null
+              },
+              processingInfo: {
+                ...imageResult.data.processingInfo,
+                scriptProcessing: scriptResult.data.processingInfo
+              },
+              video: imageResult.data.video || {
+                title: video.title,
+                id: video.id,
+                type: video.selectedType
+              }
+            },
             status: 'completed',
             processedAt: new Date().toISOString()
           };
-          
+                    
           setProcessedResults(prev => [...prev, processedVideo]);
           setProcessingQueue(prev => prev.map(v => 
             v.uniqueId === video.uniqueId ? { ...v, status: 'completed' } : v
           ));
         } else {
-          throw new Error(result.message || 'Failed to process video');
+          throw new Error('Failed to process video - invalid response structure from one or both services');
         }
       } catch (err) {
         console.error(`Failed to process video ${video.title}:`, err);
+        
+        let errorMessage = err.message;
+        if (err.name === 'AbortError') {
+          errorMessage = 'Processing timeout (10 minutes) - the workflow may still be running in the background';
+        }
+        
         setProcessingQueue(prev => prev.map(v => 
-          v.uniqueId === video.uniqueId ? { ...v, status: 'error', error: err.message } : v
+          v.uniqueId === video.uniqueId ? { ...v, status: 'error', error: errorMessage } : v
         ));
+        
+        // Add to processed results even with error for visibility
+        setProcessedResults(prev => [...prev, {
+          ...video,
+          status: 'error',
+          error: errorMessage,
+          processedAt: new Date().toISOString()
+        }]);
       }
     }
 
     setStep('results');
   };
 
+  // Download image function
+  const downloadImage = async (base64Data, filename) => {
+    try {
+      setDownloadingImages(prev => ({ ...prev, [filename]: true }));
+      
+      // Convert base64 to blob
+      const byteCharacters = atob(base64Data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'image/png' });
+      
+      // Create download link
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading image:', error);
+      setError(`Failed to download image: ${error.message}`);
+    } finally {
+      setDownloadingImages(prev => ({ ...prev, [filename]: false }));
+    }
+  };
+
   // Save to Drive Function
-  const saveToDrive = async (video) => {
+  const saveToDrive = async (video, isResave = false) => {
     if (!video.result || !isGapiLoaded) return;
+
+    const videoId = video.uniqueId;
+    setSavingToDrive(prev => ({ ...prev, [videoId]: true }));
 
     try {
       const tokenResponse = await new Promise((resolve, reject) => {
@@ -769,17 +872,28 @@ IMPORTANT ADDITION :
       window.gapi.client.setToken({ access_token: tokenResponse.access_token });
 
       const videoTitle = video.title || 'Unknown Video';
-      const folderName = `${new Date().toISOString().slice(0, 10)}_${video.selectedType}_${videoTitle.replace(/[^a-zA-Z0-9\s]/g, '').substring(0, 50)}`;
+      const sanitizedTitle = videoTitle.replace(/[^a-zA-Z0-9\s]/g, '').substring(0, 50);
       
-      // Create main folder
-      const folder = await window.gapi.client.drive.files.create({
-        resource: { 
-          name: folderName, 
-          mimeType: 'application/vnd.google-apps.folder' 
-        }
-      });
+      let folderId;
+      let folderName;
+
+      if (isResave && video.driveFolder) {
+        // For re-saves, use existing folder and update files
+        folderId = video.driveFolder;
+        folderName = `Updated_${new Date().toISOString().slice(0, 10)}_${video.selectedType}_${sanitizedTitle}`;
+      } else {
+        // Create new folder for first-time saves
+        folderName = `${new Date().toISOString().slice(0, 10)}_${video.selectedType}_${sanitizedTitle}`;
+        const folder = await window.gapi.client.drive.files.create({
+          resource: { 
+            name: folderName, 
+            mimeType: 'application/vnd.google-apps.folder' 
+          }
+        });
+        folderId = folder.result.id;
+      }
       
-      const folderId = folder.result.id;
+      const uploadPromises = [];
 
       // Save script as text file
       if (video.result?.generatedContent?.script?.content) {
@@ -787,8 +901,17 @@ IMPORTANT ADDITION :
         const delimiter = "\r\n--" + boundary + "\r\n";
         const close_delim = "\r\n--" + boundary + "--";
 
+        // Add timestamp if it's a regenerated script
+        const scriptContent = video.lastRegeneratedType === 'script' ? 
+          `[Updated: ${new Date(video.lastRegenerated).toLocaleString()}]\n\n${video.result.generatedContent.script.content}` :
+          video.result.generatedContent.script.content;
+
+        const scriptFileName = isResave && video.lastRegeneratedType === 'script' ? 
+          `Script_Updated_${new Date().toISOString().slice(0, 16).replace('T', '_').replace(/:/g, '-')}.txt` : 
+          'Script.txt';
+
         const metadata = {
-          'name': 'Script.txt',
+          'name': scriptFileName,
           'parents': [folderId],
           'mimeType': 'text/plain'
         };
@@ -799,93 +922,86 @@ IMPORTANT ADDITION :
           JSON.stringify(metadata) +
           delimiter +
           'Content-Type: text/plain\r\n\r\n' +
-          video.result.generatedContent.script.content +
+          scriptContent +
           close_delim;
 
-        await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-          method: 'POST',
-          headers: {
-            'Authorization': 'Bearer ' + tokenResponse.access_token,
-            'Content-Type': 'multipart/related; boundary="' + boundary + '"'
-          },
-          body: multipartRequestBody
-        });
-      }
-
-      // Save image URL as text file
-      if (video.result?.generatedContent?.image?.url) {
-        try {
-          // Download the image
-          const imageResponse = await fetch(video.result.generatedContent.image.url, {
-            method: "GET",
-            mode: 'cors', // Explicitly set CORS mode
-            cache: 'no-cache',
-            headers: {
-              'Accept': 'image/png,image/jpeg,image/*,*/*'
-            }
-          });
-          
-          if (!imageResponse.ok) throw new Error('Failed to download image');
-          const imageBlob = await imageResponse.blob();
-          
-          // Prepare metadata
-          const metadata = {
-            'name': 'Image.png',
-            'parents': [folderId],
-            'mimeType': 'image/png'
-          };
-
-          // Create FormData for multipart upload
-          const formData = new FormData();
-          formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-          formData.append('file', imageBlob, 'Image.png');
-
-          // Upload to Google Drive
-          await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-            method: 'POST',
-            headers: {
-              'Authorization': 'Bearer ' + tokenResponse.access_token,
-            },
-            body: formData
-          });
-        } catch (err) {
-          console.error('Error saving image to Drive:', err);
-          // Fallback to saving URL if image download fails
-          const boundary = '-------314159265358979323846';
-          const delimiter = "\r\n--" + boundary + "\r\n";
-          const close_delim = "\r\n--" + boundary + "--";
-
-          const metadata = {
-            'name': 'image_url.txt',
-            'parents': [folderId],
-            'mimeType': 'text/plain'
-          };
-
-          const imageInfo = `Image URL: ${video.result.generatedContent.image.url}`;
-
-          const multipartRequestBody =
-            delimiter +
-            'Content-Type: application/json\r\n\r\n' +
-            JSON.stringify(metadata) +
-            delimiter +
-            'Content-Type: text/plain\r\n\r\n' +
-            imageInfo +
-            close_delim;
-
-          await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+        uploadPromises.push(
+          fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
             method: 'POST',
             headers: {
               'Authorization': 'Bearer ' + tokenResponse.access_token,
               'Content-Type': 'multipart/related; boundary="' + boundary + '"'
             },
             body: multipartRequestBody
-          });
-        }
+          })
+        );
       }
 
+      // Helper function to upload image
+      const uploadImage = async (base64Data, fileName) => {
+        const imageBlob = new Blob([
+          new Uint8Array(
+            atob(base64Data)
+              .split('')
+              .map(char => char.charCodeAt(0))
+          )
+        ], { type: 'image/png' });
+        
+        const formData = new FormData();
+        formData.append('metadata', new Blob([JSON.stringify({
+          'name': fileName,
+          'parents': [folderId],
+          'mimeType': 'image/png'
+        })], { type: 'application/json' }));
+        formData.append('file', imageBlob, fileName);
+
+        return fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + tokenResponse.access_token,
+          },
+          body: formData
+        });
+      };
+
+      // Save colored image
+      if (video.result?.generatedContent?.images?.colored?.base64) {
+        const coloredFileName = isResave && video.lastRegeneratedType === 'image' ? 
+          `Colored_Image_Updated_${new Date().toISOString().slice(0, 16).replace('T', '_').replace(/:/g, '-')}.png` : 
+          'Colored_Image.png';
+        
+        uploadPromises.push(uploadImage(
+          video.result.generatedContent.images.colored.base64,
+          coloredFileName
+        ));
+      }
+
+      // Save black and white image
+      if (video.result?.generatedContent?.images?.blackAndWhite?.base64) {
+        const bwFileName = isResave && video.lastRegeneratedType === 'image' ? 
+          `BlackAndWhite_Image_Updated_${new Date().toISOString().slice(0, 16).replace('T', '_').replace(/:/g, '-')}.png` : 
+          'BlackAndWhite_Image.png';
+        
+        uploadPromises.push(uploadImage(
+          video.result.generatedContent.images.blackAndWhite.base64,
+          bwFileName
+        ));
+      }
+
+      // Wait for all uploads to complete
+      await Promise.all(uploadPromises);
+
+      // Update the processed results
       setProcessedResults(prev => prev.map(v => {
         if (v.uniqueId === video.uniqueId) {
-          return { ...v, savedToDrive: true, driveFolder: folderId };
+          return { 
+            ...v, 
+            savedToDrive: true, 
+            driveFolder: folderId,
+            needsResave: false, // Clear the re-save flag
+            hasUnsavedChanges: false, // Clear unsaved changes flag
+            lastSavedAt: new Date().toISOString()
+          };
         }
         return v;
       }));
@@ -893,6 +1009,34 @@ IMPORTANT ADDITION :
     } catch (error) {
       console.error('Error saving to Drive:', error);
       setError(`Failed to save to Drive: ${error.message}`);
+    } finally {
+      setSavingToDrive(prev => ({ ...prev, [videoId]: false }));
+    }
+  };
+  // Enhanced Batch Save Function
+  const batchSaveToDrive = async () => {
+    const videosToSave = processedResults.filter(v => !v.savedToDrive);
+    const videosToResave = processedResults.filter(v => v.savedToDrive && (v.needsResave || v.hasUnsavedChanges));
+    
+    const allVideosToProcess = [...videosToSave, ...videosToResave];
+    
+    if (allVideosToProcess.length === 0) return;
+
+    setBatchSavingToDrive(true);
+    
+    try {
+      // Process videos sequentially to avoid overwhelming the API
+      for (const video of allVideosToProcess) {
+        const isResave = videosToResave.includes(video);
+        await saveToDrive(video, isResave);
+        // Small delay between saves
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    } catch (error) {
+      console.error('Batch save error:', error);
+      setError(`Batch save failed: ${error.message}`);
+    } finally {
+      setBatchSavingToDrive(false);
     }
   };
 
@@ -917,7 +1061,254 @@ IMPORTANT ADDITION :
     setProcessedResults([]);
     setError('');
     setStep('channels');
-  };  
+  }; 
+
+  // Modern Image Slider Component
+  const ImageSlider = ({ video, result, regeneratingItems }) => {
+    const videoId = video.uniqueId;
+    const currentTab = activeImageTab[videoId] || 'colored';
+    
+    const images = [];
+    if (result.generatedContent?.images?.colored?.base64) {
+      images.push({
+        id: 'colored',
+        name: 'Colored Version',
+        icon: '🎨',
+        base64: result.generatedContent.images.colored.base64,
+        gradient: 'from-pink-500 to-purple-600'
+      });
+    }
+    if (result.generatedContent?.images?.blackAndWhite?.base64) {
+      images.push({
+        id: 'blackAndWhite',
+        name: 'Black & White Version',
+        icon: '🖤',
+        base64: result.generatedContent.images.blackAndWhite.base64,
+        gradient: 'from-gray-500 to-gray-700'
+      });
+    }
+
+    if (images.length === 0) return null;
+
+    return (
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h4 className="font-semibold text-gray-900 flex items-center">
+            <Image className="w-5 h-5 mr-2" />
+            Generated Images
+          </h4>
+          <button
+            onClick={() => openRegenerateModal(video, 'image')}
+            disabled={regeneratingItems[`${video.uniqueId}_image`]}
+            className="flex items-center px-3 py-1.5 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
+            title="Regenerate Images Only"
+          >
+            {regeneratingItems[`${video.uniqueId}_image`] ? (
+              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+            ) : (
+              <Image className="w-4 h-4 mr-1" />
+            )}
+            Images
+          </button>
+        </div>
+        
+        {/* Tab Navigation */}
+        <div className="flex bg-gray-100 p-1 rounded-xl mb-4">
+          {images.map((image) => (
+            <button
+              key={image.id}
+              onClick={() => setActiveImageTab(prev => ({ ...prev, [videoId]: image.id }))}
+              className={`flex-1 flex items-center justify-center py-2.5 px-4 rounded-lg transition-all duration-300 font-medium text-sm ${
+                currentTab === image.id
+                  ? `bg-gradient-to-r ${image.gradient} text-white shadow-lg transform scale-105`
+                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-200'
+              }`}
+            >
+              <span className="mr-2">{image.icon}</span>
+              {image.name}
+            </button>
+          ))}
+        </div>
+
+        {/* Image Display with Smooth Transition */}
+        <div className="relative bg-gray-50 rounded-2xl p-4 overflow-hidden">
+          <div className="relative min-h-[300px] rounded-xl overflow-hidden bg-white shadow-inner">
+            {images.map((image) => (
+              <div
+                key={image.id}
+                className={`absolute inset-0 transition-all duration-500 ease-in-out transform ${
+                  currentTab === image.id
+                    ? 'opacity-100 translate-x-0 scale-100'
+                    : 'opacity-0 translate-x-4 scale-95 pointer-events-none'
+                }`}
+              >
+                <img
+                  src={`data:image/png;base64,${image.base64}`}
+                  alt={image.name}
+                  className="w-full h-full object-contain rounded-xl"
+                  style={{ maxHeight: '400px' }}
+                />
+                
+                {/* Floating Download Button */}
+                <div className="absolute bottom-4 right-4">
+                  <button
+                    onClick={() => downloadImage(
+                      image.base64,
+                      `${video.title.replace(/[^a-zA-Z0-9\s]/g, '').substring(0, 30)}_${image.id}.png`
+                    )}
+                    disabled={downloadingImages[`${video.title}_${image.id}.png`]}
+                    className={`flex items-center px-4 py-2 bg-gradient-to-r ${image.gradient} text-white rounded-full hover:shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    {downloadingImages[`${video.title}_${image.id}.png`] ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Download className="w-4 h-4 mr-2" />
+                    )}
+                    Download
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Image Counter */}
+          <div className="flex justify-center mt-4">
+            <div className="bg-white rounded-full px-4 py-2 shadow-sm">
+              <div className="flex space-x-2">
+                {images.map((image) => (
+                  <div
+                    key={image.id}
+                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                      currentTab === image.id ? 'bg-blue-500 scale-125' : 'bg-gray-300'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const DriveSaveButton = ({ video, isIndividual = true }) => {
+    const videoId = video.uniqueId;
+    const isLoading = isIndividual ? savingToDrive[videoId] : batchSavingToDrive;
+    const isSaved = video.savedToDrive;
+    const needsResave = video.needsResave || video.hasUnsavedChanges;
+
+    // Show re-save button if content was regenerated after being saved
+    if (isSaved && needsResave) {
+      return (
+        <div className="flex flex-col space-y-2">
+          {/* Status indicator */}
+          <div className="flex items-center justify-center bg-amber-50 text-amber-700 px-4 py-2 rounded-xl border border-amber-200">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            <span className="font-medium text-sm">
+              {video.regeneratedContent === 'image' ? 'Images' : 'Script'} Updated - Re-save Available
+            </span>
+          </div>
+          
+          {/* Re-save button */}
+          <button
+            onClick={() => isIndividual ? saveToDrive(video, true) : batchSaveToDrive()}
+            disabled={!isGapiLoaded || isLoading}
+            className={`flex items-center justify-center px-6 py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-xl hover:from-orange-700 hover:to-red-700 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none min-w-[180px] ${
+              isLoading ? 'animate-pulse' : ''
+            }`}
+          >
+            {isLoading ? (
+              <>
+                <div className="flex items-center space-x-2">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span className="font-medium">Re-saving...</span>
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-red-400 opacity-20 rounded-xl animate-pulse" />
+              </>
+            ) : (
+              <>
+                <RefreshCw className="w-5 h-5 mr-2" />
+                <span className="font-medium">
+                  {isIndividual ? 'Re-save to Drive' : `Re-save Updated (${processedResults.filter(v => v.needsResave || v.hasUnsavedChanges).length})`}
+                </span>
+              </>
+            )}
+          </button>
+
+          {/* Original folder link */}
+          {video.driveFolder && (
+            <div className="flex items-center justify-center bg-green-50 text-green-700 px-4 py-2 rounded-xl border border-green-200">
+              <CheckCircle className="w-4 h-4 mr-2" />
+              <span className="font-medium text-sm">Original in Drive</span>
+              <a
+                href={`https://drive.google.com/drive/folders/${video.driveFolder}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ml-3 flex items-center text-blue-600 hover:text-blue-800 transition-colors"
+              >
+                <ExternalLink className="w-3 h-3 mr-1" />
+                Open
+              </a>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Standard save button for first-time saves
+    if (isSaved && !needsResave) {
+      return (
+        <div className="flex items-center justify-center bg-green-50 text-green-700 px-4 py-3 rounded-xl border border-green-200">
+          <CheckCircle className="w-5 h-5 mr-2" />
+          <span className="font-medium">Saved to Drive</span>
+          {video.driveFolder && (
+            <a
+              href={`https://drive.google.com/drive/folders/${video.driveFolder}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-3 flex items-center text-blue-600 hover:text-blue-800 transition-colors"
+            >
+              <ExternalLink className="w-4 h-4 mr-1" />
+              Open
+            </a>
+          )}
+          {video.lastSavedAt && (
+            <span className="ml-2 text-xs text-gray-500">
+              ({new Date(video.lastSavedAt).toLocaleString()})
+            </span>
+          )}
+        </div>
+      );
+    }
+
+    // First-time save button
+    return (
+      <button
+        onClick={() => isIndividual ? saveToDrive(video, false) : batchSaveToDrive()}
+        disabled={!isGapiLoaded || isLoading}
+        className={`flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-xl hover:from-green-700 hover:to-blue-700 transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none min-w-[180px] ${
+          isLoading ? 'animate-pulse' : ''
+        }`}
+      >
+        {isLoading ? (
+          <>
+            <div className="flex items-center space-x-2">
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span className="font-medium">Saving...</span>
+            </div>
+            {/* <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-blue-400 opacity-20 rounded-xl animate-pulse" /> */}
+          </>
+        ) : (
+          <>
+            <Save className="w-5 h-5 mr-2" />
+            <span className="font-medium">
+              {isIndividual ? 'Save to Drive' : `Save All (${processedResults.filter(v => !v.savedToDrive).length})`}
+            </span>
+          </>
+        )}
+      </button>
+    );
+  };
   
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-blue-50 to-purple-50">
@@ -931,9 +1322,9 @@ IMPORTANT ADDITION :
             <p className="text-gray-600">
               Generate coloring images with scripts from YouTube videos
             </p>
-            {/* <p className="text-sm text-blue-600 mt-1">
-              ✨ Now with separate image and script regeneration
-            </p> */}
+            <p className="text-sm text-blue-600 mt-1">
+              ✨ Integrated with N8N Workflows
+            </p>
           </div>
 
           {/* Progress Steps */}
@@ -1191,7 +1582,7 @@ IMPORTANT ADDITION :
                         <h4 className="font-semibold text-lg">{type.name}</h4>
                       </div>
                       <p className="text-gray-600 text-sm mb-2">{type.description}</p>
-                      <p className="text-xs text-gray-500 italic line-clamp-2">{type.prompt}</p>
+                      <p className="text-xs text-gray-500 italic line-clamp-2">{type.imagePrompt?.substring(0, 100)}...</p>
                     </button>
                   ))}
                 </div>
@@ -1298,35 +1689,6 @@ IMPORTANT ADDITION :
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          {/* Separate regeneration buttons */}
-                          <div className="flex space-x-1">
-                            <button
-                              onClick={() => openRegenerateModal(video, 'image')}
-                              disabled={regeneratingItems[`${video.uniqueId}_image`]}
-                              className="flex items-center px-3 py-1.5 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
-                              title="Regenerate Image Only"
-                            >
-                              {regeneratingItems[`${video.uniqueId}_image`] ? (
-                                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                              ) : (
-                                <Image className="w-4 h-4 mr-1" />
-                              )}
-                              Image
-                            </button>
-                            <button
-                              onClick={() => openRegenerateModal(video, 'script')}
-                              disabled={regeneratingItems[`${video.uniqueId}_script`]}
-                              className="flex items-center px-3 py-1.5 bg-orange-600 text-white text-sm rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50"
-                              title="Regenerate Script Only"
-                            >
-                              {regeneratingItems[`${video.uniqueId}_script`] ? (
-                                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                              ) : (
-                                <FileText className="w-4 h-4 mr-1" />
-                              )}
-                              Script
-                            </button>
-                          </div>
                           <button
                             onClick={() => deleteProcessedVideo(video.uniqueId)}
                             className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
@@ -1349,58 +1711,32 @@ IMPORTANT ADDITION :
                       <div className="p-6">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                           {/* Generated Images Section */}
-                          {result.generatedContent?.image && (
-                            <div>
-                              <div className="flex items-center justify-between mb-4">
-                                <h4 className="font-semibold text-gray-900 flex items-center">
-                                  <Image className="w-5 h-5 mr-2" />
-                                  Generated Images
-                                </h4>
-                              </div>
-                              
-                              {/* Colored Image */}
-                              {result.generatedContent.image.url && (
-                                <div className="mb-4">
-                                  <h5 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
-                                    🎨 Colored Version
-                                  </h5>
-                                  <div className="relative">
-                                    <img
-                                      src={result.generatedContent.image?.url}
-                                      alt="Colored image"
-                                      className="w-full rounded-lg border-2 border-gray-200 shadow-md"
-                                    />
-                                    <button
-                                      onClick={() => {
-                                        // Download from URL
-                                        const link = document.createElement('a');
-                                        link.href = result.generatedContent.image.url;
-                                        link.target = '_blank';
-                                        link.rel = 'noopener noreferrer';
-                                        link.download = `${video.title.replace(/[^a-zA-Z0-9\s]/g, '').substring(0, 30)}_colored_image.png`;
-                                        document.body.appendChild(link);
-                                        link.click();
-                                        document.body.removeChild(link);
-                                      }}
-                                      disabled={downloadingImages[`colored_image.png_${Date.now()}`]}
-                                      className="mt-2 inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-                                    >
-                                      <Download className="w-4 h-4 mr-1" />
-                                      Download Colored
-                                    </button>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
+                          {result.generatedContent?.images && (
+                            <ImageSlider video={video} result={result} regeneratingItems={regeneratingItems}/>
                           )}
 
                           {/* Generated Script */}
                           {result.generatedContent?.script?.content && (
                             <div>
-                              <h4 className="font-semibold text-gray-900 flex items-center mb-4">
-                                <FileText className="w-5 h-5 mr-2" />
-                                Script ({result.generatedContent.script.wordCount || 'N/A'} words)
-                              </h4>
+                              <div className='flex items-center justify-between mb-4'>
+                                <h4 className="font-semibold text-gray-900 flex items-center">
+                                  <FileText className="w-5 h-5 mr-2" />
+                                  Script ({result.generatedContent.script.wordCount || 'N/A'} words)
+                                </h4>
+                                <button
+                                  onClick={() => openRegenerateModal(video, 'script')}
+                                  disabled={regeneratingItems[`${video.uniqueId}_script`]}
+                                  className="flex items-center px-3 py-1.5 bg-orange-600 text-white text-sm rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50"
+                                  title="Regenerate Script Only"
+                                >
+                                  {regeneratingItems[`${video.uniqueId}_script`] ? (
+                                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                                  ) : (
+                                    <FileText className="w-4 h-4 mr-1" />
+                                  )}
+                                  Script
+                                </button>
+                              </div>
                               <div className="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
                                 <pre className="whitespace-pre-wrap font-sans text-sm text-gray-700">
                                   {result.generatedContent.script.content}
@@ -1412,58 +1748,13 @@ IMPORTANT ADDITION :
 
                         {/* Save to Drive Button */}
                         <div className="mt-6 pt-6 border-t flex justify-end">
-                          {!video.savedToDrive ? (
-                            <button
-                              onClick={() => saveToDrive(video)}
-                              disabled={!isGapiLoaded}
-                              className="flex items-center px-4 py-2 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-lg hover:from-green-700 hover:to-blue-700 transition-all disabled:opacity-50"
-                            >
-                              <Save className="w-5 h-5 mr-2" />
-                              Save to Google Drive
-                            </button>
-                          ) : (
-                            <div className="flex items-center text-green-600">
-                              <CheckCircle className="w-5 h-5 mr-2" />
-                              <span className="font-medium">Saved to Drive</span>
-                              {video.driveFolder && (
-                                <a
-                                  href={`https://drive.google.com/drive/folders/${video.driveFolder}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="ml-3 flex items-center text-blue-600 hover:text-blue-800"
-                                >
-                                  <ExternalLink className="w-4 h-4 mr-1" />
-                                  Open Folder
-                                </a>
-                              )}
-                            </div>
-                          )}
+                          <DriveSaveButton video={video} isIndividual={true} />
                         </div>
                       </div>
                     )}
                   </div>
                 );
               })}
-
-              {/* Batch Save Option */}
-              {processedResults.length > 1 && (
-                <div className="bg-white rounded-2xl shadow-lg p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">Batch Operations</h3>
-                      <p className="text-sm text-gray-600">Save all generated content to Google Drive</p>
-                    </div>
-                    <button
-                      onClick={() => processedResults.forEach(video => !video.savedToDrive && saveToDrive(video))}
-                      disabled={!isGapiLoaded || processedResults.every(v => v.savedToDrive)}
-                      className="flex items-center px-4 py-2 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-lg hover:from-green-700 hover:to-blue-700 transition-all disabled:opacity-50"
-                    >
-                      <Save className="w-5 h-5 mr-2" />
-                      Save All to Drive
-                    </button>
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
@@ -1476,7 +1767,7 @@ IMPORTANT ADDITION :
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-2xl font-bold mb-1">
-                        Regenerate {regenerateConfig.type === 'image' ? 'Image' : 'Script'}
+                        Regenerate {regenerateConfig.type === 'image' ? 'Images' : 'Script'}
                       </h3>
                       <p className="text-blue-100 text-sm">
                         For: {regenerateConfig.video?.title}
@@ -1498,21 +1789,25 @@ IMPORTANT ADDITION :
                       Additional Instructions (Optional)
                     </label>
                     <textarea
-                      value={regenerateConfig.prompt}
-                      onChange={(e) => setRegenerateConfig(prev => ({ ...prev, prompt: e.target.value }))}
+                      value={regenerateConfig.additionalInstructions}
+                      onChange={(e) => setRegenerateConfig(prev => ({ ...prev, additionalInstructions: e.target.value }))}
                       placeholder={regenerateConfig.type === 'image' ? 
                         `Add specific instructions for image regeneration...
-                    Examples:
-                    - Make the outlines bolder
-                    - Add more vibrant colors
-                    - Include specific elements from the video
-                    - Adjust the composition` :
+Examples:
+- Make the outlines bolder
+- Add more vibrant colors
+- Include specific elements from the video
+- Adjust the composition
+- Change the background
+- Make it more child-friendly` :
                         `Add specific instructions for script regeneration...
-                    Examples:
-                    - Add more educational content
-                    - Include a specific lesson
-                    - Make it more interactive
-                    - Focus on a particular age group`}
+Examples:
+- Add more educational content
+- Include a specific lesson
+- Make it more interactive
+- Focus on a particular age group
+- Add more questions for engagement
+- Include specific vocabulary`}
                       className="w-full h-32 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors resize-none"
                     />
                   </div>
@@ -1520,15 +1815,19 @@ IMPORTANT ADDITION :
                   <div className="bg-gray-50 rounded-xl p-4 mb-6">
                     <h4 className="font-semibold text-gray-800 mb-2 flex items-center">
                       {regenerateConfig.type === 'image' ? <Image className="w-4 h-4 mr-2 text-purple-600" /> :
-                       regenerateConfig.type === 'script' ? <FileText className="w-4 h-4 mr-2 text-orange-600" /> :
-                       <RefreshCw className="w-4 h-4 mr-2 text-blue-600" />}
+                       <FileText className="w-4 h-4 mr-2 text-orange-600" />}
                       Current Settings
                     </h4>
                     <div className="text-sm text-gray-600 space-y-1">
                       <p><span className="font-medium">Type:</span> {regenerateConfig.video?.typeName}</p>
                       <p><span className="font-medium">Regenerating:</span> {
-                        regenerateConfig.type === 'image' ? 'Image Only' : 'Script Only'
+                        regenerateConfig.type === 'image' ? 'Both Colored & B&W Images' : 'Script Only'
                       }</p>
+                      {regenerateConfig.type === 'image' && (
+                        <p className="text-xs text-gray-500 mt-2">
+                          Note: Both colored and black & white versions will be regenerated together
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -1544,14 +1843,12 @@ IMPORTANT ADDITION :
                       onClick={regenerateContent}
                       className={`flex-1 px-4 py-3 text-white rounded-xl transition-all font-medium flex items-center justify-center ${
                         regenerateConfig.type === 'image' ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700' :
-                        regenerateConfig.type === 'script' ? 'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700' :
-                        'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
+                        'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700'
                       }`}
                     >
                       {regenerateConfig.type === 'image' ? <Image className="w-4 h-4 mr-2" /> :
-                       regenerateConfig.type === 'script' ? <FileText className="w-4 h-4 mr-2" /> :
-                       <RefreshCw className="w-4 h-4 mr-2" />}
-                      Regenerate {regenerateConfig.type === 'image' ? 'Image' : 'Script'}
+                       <FileText className="w-4 h-4 mr-2" />}
+                      Regenerate {regenerateConfig.type === 'image' ? 'Images' : 'Script'}
                     </button>
                   </div>
                 </div>

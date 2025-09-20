@@ -48,50 +48,52 @@ const YouTubeChannelProcessor = () => {
       color: 'bg-blue-500',
       borderColor: 'border-blue-500',
       bgLight: 'bg-blue-50',
-      imagePrompt: `Create a vibrant cartoon-style educational coloring page at 1920x1080 pixels (landscape) for children aged 4-8.
+      imagePrompt: `Create a 16:9 cartoon-style illustration based on {TITLE}. Use bold colors, thick outlines, flat simple shapes, and a vibrant kid-friendly look for 6-year-olds. The image is for drawing practice, so keep it clean, clear, and without any text.`,
+      scriptPrompt: `Write a 10-minute "Draw and Learn" YouTube Voice-Over script for kids aged 4-6 (Grade 1). The video features a drawing and coloring segment of a popular kid-friendly topic.
 
-Visual Style: Bold black outlines (2-3px), flat vector shapes, friendly cartoon aesthetic. Clean, uncluttered composition with rounded, simple forms. No gradients or textures.
+GOAL:
+Teach some fun and simple lessons while we’re drawing [WHAT WE’RE DRAWING]!
 
-Color & Contrast: Limited palette of 4-6 harmonious colors plus black outlines. Vivid yet soft child-safe tones with high contrast between areas. Main subject uses warmer colors (60% visual weight), background uses softer tones (40%).
+TOPIC: [WHAT WE’RE DRAWING]: 
 
-Layout: Main subject centered, occupying 60-70% of canvas. Large, readable shapes that work at thumbnail size. Minimal background with simple patterns or soft shapes. Generous white space for balance.
+🧠 NARRATION STRUCTURE
+- Grade 1 level language: simple, warm, playful, clear.
+- Grade 2 level narration: simple, no complicated twist
+- Tone: casual, enthusiastic -  narration is like chatting with a friend about a fun show you both love.
+- Voice-over only: No detailed description of the drawing process & colors, no "how to draw”
+- Word count: 700 to 800 words max total.
 
-Educational Content: Based on {TITLE}, must visually teach a clear learning concept (letters, numbers, shapes, colors, counting, etc.). Include visual teaching cues and props. Use positive, smiling characters in safe, age-appropriate scenes. One clear learning focus per image.
+🎬 [Intro | 0:00–0:45]
+Start with: 
+"Hi Friends it’s Mia here! Welcome back to Let’s Draw and Learn"
+Mention what we’re drawing:
+"Today we’re drawing [WHAT WE’RE DRAWING]!”  In this video it’s all about [X] & [Y].” 
+“Grab your crayons and paper—let’s draw together! Are you ready? Let’s go!” 
+✅ CTA #1 – Subscribe: “And If you love drawing and smart stories, hit Subscribe so you don’t miss our next video!”
 
-Technical: Print-ready quality, scalable edges, strong contrast for line-art conversion. Works with crayons, markers, or digital coloring. No text unless explicitly requested in title.`,
-      scriptPrompt: `Write a 10-minute "Draw and Learn" YouTube script for kids aged 4-6. The video features a drawing and coloring segment of a popular kid-friendly topic.
+🧩 [0:30-2:30] - Start talking about the topic while we draw/color 
+Introduce the main idea or topic that leads to the [WHAT WE’RE DRAWING]
+“Let me tell you about”
+Add a first interesting learning / lesson about [WHAT WE’RE DRAWING]
+Keep it light, simple, warm and fun/playful, as if you’re telling a friend the gist.
+🧩 [2:30-4:00] - Include a mini story or pretend scene
+Describe one exciting mini story or funny pretend scene inspired by [WHAT WE’RE DRAWING].
+Use casual phrases: “Guess what happens when…?”, “You won’t believe…”
+Ask your audience: “What do you think XXX would do?” OR “What do you think happened next?”
+✅ CTA #2 – Like: “If you think that’s XXX, give this video a big LIKE!”
 
-GOAL: Teach something fun and simple while a character, animal, or object is being drawn and colored.
+🧩  [4:00-9:00] - Add a few fun/surprising facts
+Drop one or two or more fun/surprising facts  about [WHAT WE’RE DRAWING]
+One fact can be a number if relevant
+Build anticipation: “But that’s not all…”
+Keep it conversational, as if leaning in to spill the next secret.
+"And Keep drawing and coloring with me, the final image will surprise/wow/xxx you!"
 
-SCRIPT MUST INCLUDE:
-- Total word count between 700 and 800 words this is critical make sure you are respecting it.
-- Mention "drawing and coloring" 2-3 times (e.g., "It's so fun to draw and color this...")
-- Do NOT describe the step-by-step drawing process
-- Begin with a cheerful welcome
-- Include a small story or pretend play moment
-- Include simple facts or lessons about the topic
-- Include 1 funny or surprising fact or number
-- Include at least 2-3 engaging questions for the audience ("What color would YOU choose?")
-- Tone must be cheerful, playful, and warm - like a Grade 1 teacher
-- Use positive reinforcement throughout
-- Use age-appropriate, clear and simple language for 4-6-year-olds grade 1
-- Include 3 genuine, integrated CTA for subscribing at: inside the first 60 seconds, middle, and end
-
-EXAMPLE FLOW:
-[0:00-0:30] - Warm Welcome + What we're drawing today + Fun hook
-[0:30-2:30] - Start talking about the topic while we draw/color
-[2:30-4:00] - Include a mini story or pretend scene
-[4:00-6:30] - Add a few facts + a surprising/funny moment
-[6:30-8:30] - More fun details, wrap up the lesson
-[8:30-10:00] - Final thoughts + recap + warm goodbye
-
-EXTRA TIP:
-Imagine it being read by a warm, fun narrator while we watch a hand drawing and coloring something bright and familiar!
-
-IMPORTANT ADDITION :
-- Do **not** include these instructions in the script text.
-- Respect the prompt structure.
-- Output only the script text.
+👋 [Closing | 9:00–10:00]
+Congrats: "WOW you did Amazing!"
+Recap: “Today we drew [WHAT WE DREW] and learned [2 or 3 KEY LESSONS].”
+✅ CTA #4 – Subscribe: “And If you love Smart stories and Art, hit Subscribe so you don’t miss our next video on Let’s Draw and LEARN!”
+“See you next time, Friends—bye!” 
 `
     },
     {
@@ -102,60 +104,60 @@ IMPORTANT ADDITION :
       color: 'bg-pink-500',
       borderColor: 'border-pink-500',
       bgLight: 'bg-pink-50',
-      imagePrompt: `Create a Princess Peppa adventure coloring page at 1920x1080 pixels (landscape) for children aged 4-8.
+      imagePrompt: `Create a 16:9 cartoon-style illustration based on {TITLE}. Use bold colors, thick outlines, flat simple shapes, and a vibrant kid-friendly look for 6-year-olds. The image is for drawing practice, so keep it clean, clear, and without any text.`,
+      scriptPrompt: `Narration is inspired by a specific video episode; tease enough to excite viewers to watch the full episode.
+Read the transcript for [VIDEO TITLE] (link: [VIDEO URL]) and write a script that follows this structure:
 
-Visual Style: Bold black outlines (2-3px), flat vector cartoon style with rounded, friendly shapes. Clean coloring-book aesthetic, no gradients or complex textures.
-
-Color Strategy: 4-6 harmonious colors plus black outlines, vivid but soft tones. High contrast between adjacent areas. Main subject warmer/saturated colors (60% visual weight), background softer/desaturated (40%).
-
-Composition: Main subject centered, occupying 60-70% of canvas. Large, identifiable shapes readable at thumbnail size. Minimal background with simple patterns or large soft shapes. Generous white space.
-
-Princess Peppa Content: Based on {TITLE}, show child-appropriate princess adventure scene. Friendly, smiling expressions with playful, non-threatening action. Include recognizable simple props (crowns, balloons, castle elements). Avoid any scary or inappropriate elements.
-
-Technical Requirements: Exactly 1920x1080px landscape, clean edges, high contrast for printing and line-art conversion. No text unless explicitly requested in title.`,
-    scriptPrompt: `NARRATION STRUCTURE (Total word count between 700 and 800 words this is critical make sure you are respecting it)
-- Voice-over only (no "how to draw")—your narration is like chatting with a friend about a fun show you both love.
+🧠 NARRATION STRUCTURE
 - Grade 1 level language: simple, warm, playful, clear.
-- Tone: casual, enthusiastic—like "Hey, did you see that part?!"
+- Grade 2 level narration: simple, no complicated twist
+- Tone: casual, enthusiastic -  narration is like chatting with a friend about a fun show you both love.
+- Voice-over only: No detailed description of the drawing process & colors, no "how to draw”
+- Word count: 700 to 800 words max total.
 
-[Intro | 0:00-0:45]
-Start with: "Hi friends it's Mia here! Welcome back to Let's Draw a Story, today..."
-Mention what we're drawing: "Today we're drawing [character/scene] from [Episode Title]..."
-Set up the tease: "I can't believe what happened in this video—let me tell you..."
-CTA #1 – Subscribe: "If you love drawing and stories, hit Subscribe so you don't miss the next one!"
 
-[Episode Tease | 0:45-3:00]
-Summarize the setup of the episode leading to this moment.
-Keep it light and fun, as if you’re telling a friend the gist.
+🎬 [Intro | 0:00–0:45]
+Start with: 
+"Hi Friends it’s Mia here! Welcome back to Let’s Draw Princess Pig"
+Mention what we’re drawing:
+"Today we’re drawing [WHAT WE’RE DRAWING]!”  In this video it’s all about [X] & [Y].” 
+or “Today we’re drawing [WHAT WE’RE DRAWING] from the Video [Episode Title]…”  In this video it’s all about [X] & [Y].” 
+or “Today our drawing is inspired by XXX's amazing video [VIDEO TITLE]! In this video it’s all about [X] & [Y].”  
+“Grab your crayons and paper—let’s draw together! Are you ready? Let’s go!” 
+✅ CTA #1 – Subscribe: “And If you love drawing and fun stories, hit Subscribe so you don’t miss our next video!”
+
+🧩 [Episode Tease + Story Setup | 0:45–3:00]
+Summarize the setup (main idea or problem) that leads to the [DRAWING MOMENT]
+“Let me tell you what happened in this video/story/drawing…”
 Don’t spoil the ending—just enough context to build interest.
+Keep it light, simple, warm and fun/playful, as if you’re telling a friend the gist.
 
-[Key Moment Teaser | 3:00-5:30]
-Describe one exciting twist or funny beat from the episode.
-Ask your audience: "What do you think [character] will do next?"
-CTA #2 – Like: "If you think that's wild, give this video a big thumbs up!"
 
-[Second Tease | 5:30-8:00]
-Drop another tantalizing clue—a second twist or hint.
+💭 [Key Moment Teaser | 3:00–5:30]
+Describe one exciting twist or funny beat from the story.
+Use casual phrases: “Guess what happens when…?”, “You won’t believe it when…”
+Ask your audience: “What do you think [character] will do next?” OR “What do you think happened next?”
+✅ CTA #2 – Like: “If you think that’s XXX, give this video a big LIKE!”
+
+
+🔁 [Second Tease | 5:30–8:00]
+Drop a second surprise or clue that builds toward the drawing moment.
 Build anticipation: “But that’s not all…”
+Show how things begin to make sense.
 Keep it conversational, as if leaning in to spill the next secret.
 
-[Soft Reveal + Call-Out | 8:00-9:30]
-Reveal just enough: "Here's the fun part I can share..."
-Tie back to the drawing: “And that’s exactly what inspired this picture!”
-CTA #3 – Watch the full episode
-“To see what really happens next, check the link in the description and go watch [Episode Title]!”
 
-[Closing | 9:30-10:00]
-Recap briefly: “Today we sketched [scene] and teased [big twist].”
-Invite them back: “Can’t wait to draw with you again!”
-CTA #4 – Subscribe / Watch:
-“Don’t forget to subscribe—and click that episode link below. See you next time on Let’s Draw a Story!”
+✅ [ Reveal + Resolution| 8:00–9:30]
+Explain what actually happened and how it led to the drawing moment.
+Tie back to the drawing:: “That’s the story of how this drawing happened!”
+"And Keep drawing and coloring with me, the final image will surprise/wow/xxx you!"
 
-IMPORTANT ADDITION :
-- Keep the Grade-1 language and voice-over style.
-- Do **not** include these instructions in the script text.
-- Respect the prompt structure.
-- Output only the script text.
+
+👋 [Closing | 9:30–10:00]
+Congrats: "WOW you did Amazing!"
+Recap: “Today we drew [WHAT WE DREW] and learned [KEY LESSON].”
+✅ CTA #4 – Subscribe: “And If you love fun stories and art, hit Subscribe so you don’t miss our next video!”
+“See you next time, Friends—bye!”
 `
     },
     {
@@ -166,60 +168,59 @@ IMPORTANT ADDITION :
       color: 'bg-purple-500',
       borderColor: 'border-purple-500',
       bgLight: 'bg-purple-50',
-      imagePrompt: `Create a story-based cartoon coloring page at 1920x1080 pixels (landscape) for children aged 4-8.
+      imagePrompt: `Create a 16:9 cartoon-style illustration based on {TITLE}. Use bold colors, thick outlines, flat simple shapes, and a vibrant kid-friendly look for 6-year-olds. The image is for drawing practice, so keep it clean, clear, and without any text.`,
+      scriptPrompt: `MAIN TOPIC:
+Imagine a Story inspired by the [MAIN TOPIC] of the Title, that leads to the [DRAWING MOMENT]
 
-Visual Style: Bold black outlines (2-3px), flat rounded shapes, clean uncluttered layout. Cartoon coloring-book aesthetic without gradients or photorealism.
+The [MAIN TOPIC] is also the [WHAT WE’RE DRAWING] and [DRAWING MOMENT]
 
-Color Strategy: 4-6 harmonious colors plus black outlines. Vivid yet soft tones with strong contrast between adjacent areas. Main subject warmer/saturated (60% visual weight), background softer/desaturated (40%).
+🧠 NARRATION STRUCTURE
+Grade 1 level language: simple, warm, playful, clear.
+Grade 1 level narration: simple, no complicated twist
+Tone: casual, enthusiastic -  narration is like chatting with a friend about a fun show you both love.
+Voice-over only: No detailed description of the drawing process & colors, no "how to draw”
+Word count: 700 to 800 words max total.
 
-Composition: Main subject occupies 60-70% of canvas, centered or slightly offset. Large, simple shapes readable at thumbnail scale. Minimal background elements that support the story context.
+🎬 [Intro | 0:00–0:45]
+Start with: 
+"Hi Friends it’s Mia here! Welcome back to Let’s Draw a Story"
+Mention what we’re drawing:
+"Today we’re drawing [WHAT WE’RE DRAWING]!”  In this video it’s all about [X] & [Y].” 
+“Grab your crayons and paper—let’s draw together! Are you ready? Let’s go!” 
+✅ CTA #1 – Subscribe: “And If you love drawing and fun stories, hit Subscribe so you don’t miss our next video!”
 
-Story Content: Based on {TITLE}, illustrate one clear story moment or scene. Include 1-2 narrative clues (props or action poses) so children can infer and continue the story. Positive, expressive faces avoiding ambiguous or frightening expressions. Clear focal point emphasizing the story beat.
-
-Technical: Exactly 1920x1080px, print-ready with clean line-art. High contrast for coloring clarity. No text unless title requests it.`,
-      scriptPrompt: `NARRATION STRUCTURE (Total word count between 700 and 800 words this is critical make sure you are respecting it)
-- Voice-over only (no "how to draw")—your narration is like chatting with a friend about a fun show you both love.
-- Grade 1 level language: simple, warm, playful, clear.
-- Tone: casual, enthusiastic—like "Hey, did you see that part?!"
-
-[Intro | 0:00-0:45]
-Start with: "Hi friends it's Mia here! Welcome back to Let's Draw a Story, today..."
-Mention what we're drawing: "Today we're drawing [character/scene] from [Episode Title]..."
-Set up the tease: "I can't believe what happened in this video—let me tell you..."
-CTA #1 – Subscribe: "If you love drawing and stories, hit Subscribe so you don't miss the next one!"
-
-[Episode Tease | 0:45-3:00]
-Summarize the setup of the episode leading to this moment.
-Keep it light and fun, as if you’re telling a friend the gist.
+🧩 [Episode Tease + Story Setup | 0:45–3:00]
+Summarize the setup (main idea or problem) that leads to the  [DRAWING MOMENT]
+“Let me tell you what happened in this story…”
 Don’t spoil the ending—just enough context to build interest.
+Keep it light, simple, warm and fun/playful, as if you’re telling a friend the gist.
 
-[Key Moment Teaser | 3:00-5:30]
-Describe one exciting twist or funny beat from the episode.
-Ask your audience: "What do you think [character] will do next?"
-CTA #2 – Like: "If you think that's wild, give this video a big thumbs up!"
 
-[Second Tease | 5:30-8:00]
-Drop another tantalizing clue—a second twist or hint.
+💭 [Key Moment Teaser | 3:00–5:30]
+Describe one exciting twist or funny beat from the story.
+Use casual phrases: “Guess what happens when…?”, “You won’t believe it when…”
+Ask your audience: “What do you think [character] will do next?” OR “What do you think happened next?”
+✅ CTA #2 – Like: “If you think that’s XXX, give this video a big LIKE!”
+
+
+🔁 [Second Tease | 5:30–8:00]
+Drop a second surprise or clue that builds toward the drawing moment.
 Build anticipation: “But that’s not all…”
+Show how things begin to make sense.
 Keep it conversational, as if leaning in to spill the next secret.
 
-[Soft Reveal + Call-Out | 8:00-9:30]
-Reveal just enough: "Here's the fun part I can share..."
-Tie back to the drawing: “And that’s exactly what inspired this picture!”
-CTA #3 – Watch the full episode
-“To see what really happens next, check the link in the description and go watch [Episode Title]!”
 
-[Closing | 9:30-10:00]
-Recap briefly: “Today we sketched [scene] and teased [big twist].”
-Invite them back: “Can’t wait to draw with you again!”
-CTA #4 – Subscribe / Watch:
-“Don’t forget to subscribe—and click that episode link below. See you next time on Let’s Draw a Story!”
+✅ [ Reveal + Resolution| 8:00–9:30]
+Explain what actually happened and how it led to the drawing moment.
+Tie back to the drawing:: “That’s the story of how this drawing happened!”
+"And Keep drawing and coloring with me, the final image will surprise/wow/xxx you!"
 
-IMPORTANT ADDITION :
-- Keep the Grade-1 language and voice-over style.
-- Do **not** include these instructions in the script text.
-- Respect the prompt structure.
-- Output only the script text.
+
+👋 [Closing | 9:30–10:00]
+Congrats: "WOW you did Amazing!"
+Recap: “Today we drew [WHAT WE DREW] and learned [KEY LESSON].”
+✅ CTA #4 – Subscribe: “And If you love fun stories and art, hit Subscribe so you don’t miss our next video on Let’s Draw XXX!”
+“See you next time, Friends—bye!” 
 `
     },
     {
@@ -230,56 +231,60 @@ IMPORTANT ADDITION :
       color: 'bg-red-500',
       borderColor: 'border-red-500',
       bgLight: 'bg-red-50',
-      imagePrompt: `Create a YouTuber-inspired cartoon coloring page at 1920x1080 pixels (landscape) for children aged 4-8.
+      imagePrompt: `Create a 16:9 cartoon-style illustration based on {TITLE}. Use bold colors, thick outlines, flat simple shapes, and a vibrant kid-friendly look for 6-year-olds. The image is for drawing practice, so keep it clean, clear, and without any text.`,
+      scriptPrompt: `Narration is inspired by a specific video episode; tease enough to excite viewers to watch the full episode.
+Read the transcript for [VIDEO TITLE] (link: [VIDEO URL]) and write a script that follows this structure:
 
-Visual Style: Bold black outlines (2-3px), flat simple shapes, friendly cartoon aesthetic. Stylized, child-appropriate design avoiding photographic texture.
+🧠 NARRATION STRUCTURE
+- Grade 1 level language: simple, warm, playful, clear.
+- Grade 2 level narration: simple, no complicated twist
+- Tone: casual, enthusiastic -  narration is like chatting with a friend about a fun show you both love.
+- Voice-over only: No detailed description of the drawing process & colors, no "how to draw”
+- Word count: 700 to 800 words max total.
 
-Color Strategy: 4-6 harmonious colors plus black outlines. Soft, readable tones with high contrast for easy coloring clarity.
 
-Composition: Main subject 60-70% of canvas, centered or slightly offset. Clean background with minimal supporting elements.
+🎬 [Intro | 0:00–0:45]
+Start with: 
+"Hi Friends it’s Mia here! Welcome back to Let’s Draw YouTubers"
+Mention what we’re drawing:
+"Today we’re drawing [WHAT WE’RE DRAWING]!”  In this video it’s all about [X] & [Y].” 
+or “Today we’re drawing [WHAT WE’RE DRAWING] from the Video [Episode Title]…”  In this video it’s all about [X] & [Y].” 
+or “Today our drawing is inspired by XXX's amazing video [VIDEO TITLE]! In this video it’s all about [X] & [Y].”  
+“Grab your crayons and paper—let’s draw together! Are you ready? Let’s go!” 
+✅ CTA #1 – Subscribe: “And If you love drawing and fun stories, hit Subscribe so you don’t miss our next video!”
 
-YouTuber Content: Based on {TITLE}, depict child-friendly, stylized character doing harmless activity (gaming, drawing, holding props). Emphasize friendly expression and simplified, non-realistic features appropriate for kids. Respectful depiction suitable for children, avoiding controversial content.
+🧩 [Episode Tease + Story Setup | 0:45–3:00]
+Summarize the setup (main idea or problem) that leads to the [DRAWING MOMENT]
+“Let me tell you what happened in this video/story/drawing…”
+Don’t spoil the ending—just enough context to build interest.
+Keep it light, simple, warm and fun/playful, as if you’re telling a friend the gist.
 
-Technical: Exactly 1920x1080px, clean edges, high contrast for printing. No text unless explicitly requested in title.`,
-      scriptPrompt: `Read the transcript for [VIDEO TITLE] (link: [VIDEO URL]) and write a 700–800-word voiceover script for a drawing & coloring video on Let’s Draw Youtubers, suitable for 6-year-olds. Don’t describe how to draw—focus on the story. Structure and requirements:
-1. Intro (0:00-0:45)
-Begin: "Hi friends, it's Mia here! Welcome back to Let's Draw Youtubers. Today we're drawing [WHAT WE'RE DRAWING]—and you can find the video link in the description below!"
-Point out a fun or mysterious detail in the drawing or video transcript
-CTA #1 – Subscribe: "If you love drawing and fun stories, hit Subscribe so you don't miss our next video!"
 
-2. Story Setup (0:45-3:00)
-Introduce the main idea or problem that leads to the drawing moment using simple, warm, playful language.
-Keep sentences short and clear.
+💭 [Key Moment Teaser | 3:00–5:30]
+Describe one exciting twist or funny beat from the story.
+Use casual phrases: “Guess what happens when…?”, “You won’t believe it when…”
+Ask your audience: “What do you think [character] will do next?” OR “What do you think happened next?”
+✅ CTA #2 – Like: “If you think that’s XXX, give this video a big LIKE!”
 
-3. First Twist or Guess (3:00-5:30)
-Add a funny misunderstanding or surprise.
-Ask the audience a simple question (“What do you think happened next?”).  
-✅ CTA #2 – Like: “If you think that’s what really happened, give this video a big thumbs up!”
 
-4. Second Twist or Clue (5:30-8:00)
-Introduce a second surprise that builds toward the drawing moment.
+🔁 [Second Tease | 5:30–8:00]
+Drop a second surprise or clue that builds toward the drawing moment.
+Build anticipation: “But that’s not all…”
 Show how things begin to make sense.
+Keep it conversational, as if leaning in to spill the next secret.
 
-5. Reveal + Resolution (8:00-9:30)
+
+✅ [ Reveal + Resolution| 8:00–9:30]
 Explain what actually happened and how it led to the drawing moment.
-Add a sweet or silly ending line: “And that’s the story of how this drawing happened!”
+Tie back to the drawing:: “That’s the story of how this drawing happened!”
+"And Keep drawing and coloring with me, the final image will surprise/wow/xxx you!"
 
-6. Closing (9:30-10:00)
+
+👋 [Closing | 9:30–10:00]
+Congrats: "WOW you did Amazing!"
 Recap: “Today we drew [WHAT WE DREW] and learned [KEY LESSON].”
-✅ CTA #3 – Subscribe: “If you love fun challenges and art, hit Subscribe so you don’t miss our next video on Let’s Draw Youtuberst!”
-Add one final warm goodbye.
-
-Tone & Style
-  - Grade-1 level language: simple, clear, playful, warm.
-  - Total word count between 700 and 800 words this is critical make sure you are respecting it.
-  - Include three CTAs at specified points.
-  - Mention “video link in the description” in the intro.
-
-IMPORTANT ADDITION :
-- Maintain the three CTAs at their spots.
-- Do **not** include these instructions in the script text.
-- Respect the prompt structure.
-- Output only the script text.
+✅ CTA #4 – Subscribe: “And If you love fun stories and art, hit Subscribe so you don’t miss our next video!”
+“See you next time, Friends—bye!” 
 `
     },
     {
@@ -290,57 +295,60 @@ IMPORTANT ADDITION :
       color: 'bg-green-500',
       borderColor: 'border-green-500',
       bgLight: 'bg-green-50',
-      imagePrompt: `Create a Mr Beast challenge cartoon coloring page at 1920x1080 pixels (landscape) for children aged 4-8.
+      imagePrompt: `Create a 16:9 cartoon-style illustration based on {TITLE}. Use bold colors, thick outlines, flat simple shapes, and a vibrant kid-friendly look for 6-year-olds. The image is for drawing practice, so keep it clean, clear, and without any text.`,
+      scriptPrompt: `Narration is inspired by a specific video episode; tease enough to excite viewers to watch the full episode.
+Read the transcript for [VIDEO TITLE] (link: [VIDEO URL]) and write a script that follows this structure:
 
-Visual Style: Bold outlines (2-3px), flat rounded shapes, playful cartoon aesthetic. Clean composition avoiding photorealism.
+🧠 NARRATION STRUCTURE
+- Grade 1 level language: simple, warm, playful, clear.
+- Grade 2 level narration: simple, no complicated twist
+- Tone: casual, enthusiastic -  narration is like chatting with a friend about a fun show you both love.
+- Voice-over only: No detailed description of the drawing process & colors, no "how to draw”
+- Word count: 700 to 800 words max total.
 
-Color Strategy: 4-6 harmonious colors plus black outlines, vivid but soft tones with high contrast.
 
-Composition: Main subject occupies 60-70% of canvas, clearly centered. Minimal background with large simple shapes suggesting challenge environment.
+🎬 [Intro | 0:00–0:45]
+Start with: 
+"Hi Friends it’s Mia here! Welcome back to Let’s Draw MR BEAST"
+Mention what we’re drawing:
+"Today we’re drawing [WHAT WE’RE DRAWING]!”  In this video it’s all about [X] & [Y].” 
+or “Today we’re drawing [WHAT WE’RE DRAWING] from the Video [Episode Title]…”  In this video it’s all about [X] & [Y].” 
+or “Today our drawing is inspired by XXX's amazing video [VIDEO TITLE]! In this video it’s all about [X] & [Y].”  
+“Grab your crayons and paper—let’s draw together! Are you ready? Let’s go!” 
+✅ CTA #1 – Subscribe: “And If you love drawing and fun stories, hit Subscribe so you don’t miss our next video!”
 
-Mr Beast Challenge Content: Based on {TITLE}, represent kid-safe, simplified challenge scene (team games, treasure hunt, friendly obstacle course). Show smiling participants, friendly competition, clear non-dangerous props (flags, cones, foam objects). Avoid realistic stunts or anything encouraging risky behavior. Stylized, child-appropriate depiction.
+🧩 [Episode Tease + Story Setup | 0:45–3:00]
+Summarize the setup (main idea or problem) that leads to the [DRAWING MOMENT]
+“Let me tell you what happened in this video/story/drawing…”
+Don’t spoil the ending—just enough context to build interest.
+Keep it light, simple, warm and fun/playful, as if you’re telling a friend the gist.
 
-Technical: Exactly 1920x1080px, high-contrast, print-ready line art. No text unless requested.`,
-      scriptPrompt: `Read the transcript for [VIDEO TITLE] (link: [VIDEO URL]) and write a 700–800-word voiceover script for a drawing & coloring video on Let’s Draw Mr Beast, suitable for 6-year-olds. Don’t describe how to draw—focus on the story. Structure and requirements:
 
-1. Intro (0:00-0:45)
-Begin: "Hi friends, it's Mia here! Welcome back to Let's Draw Mr Beast. Today we're drawing [WHAT WE'RE DRAWING]—and you can find the Mr Beast video link in the description below!"
-Point out a fun or mysterious detail in the drawing.
-CTA #1 – Subscribe: "If you love drawing and fun stories, hit Subscribe so you don't miss our next video!"
+💭 [Key Moment Teaser | 3:00–5:30]
+Describe one exciting twist or funny beat from the story.
+Use casual phrases: “Guess what happens when…?”, “You won’t believe it when…”
+Ask your audience: “What do you think [character] will do next?” OR “What do you think happened next?”
+✅ CTA #2 – Like: “If you think that’s XXX, give this video a big LIKE!”
 
-2. Story Setup (0:45-3:00)
-Introduce the main idea or problem that leads to the drawing moment using simple, warm, playful language.
-Keep sentences short and clear.
 
-3. First Twist or Guess (3:00-5:30)
-Add a funny misunderstanding or surprise.
-Ask the audience a simple question (“What do you think happened next?”).
-✅ CTA #2 – Like: “If you think that’s what really happened, give this video a big thumbs up!”
-
-4. Second Twist or Clue (5:30-8:00)
-Introduce a second surprise or clue that builds toward the drawing moment.
+🔁 [Second Tease | 5:30–8:00]
+Drop a second surprise or clue that builds toward the drawing moment.
+Build anticipation: “But that’s not all…”
 Show how things begin to make sense.
+Keep it conversational, as if leaning in to spill the next secret.
 
-5. Reveal + Resolution (8:00-9:30)
+
+✅ [ Reveal + Resolution| 8:00–9:30]
 Explain what actually happened and how it led to the drawing moment.
-Add a sweet or silly ending line: “And that’s the story of how this drawing happened!”
+Tie back to the drawing:: “That’s the story of how this drawing happened!”
+"And Keep drawing and coloring with me, the final image will surprise/wow/xxx you!"
 
-6. Closing (9:30-10:00)
+
+👋 [Closing | 9:30–10:00]
+Congrats: "WOW you did Amazing!"
 Recap: “Today we drew [WHAT WE DREW] and learned [KEY LESSON].”
-✅ CTA #3 – Subscribe: “If you love fun adventures and art, hit Subscribe so you don’t miss our next video on Let’s Draw Mr Beast!”
-Add one final warm goodbye.
-
-Tone & Style
-  - Grade-1 level language: simple, clear, playful, warm.
-  - Total word count between 700 and 800 words this is critical make sure you are respecting it.
-  - Include three CTAs at specified points.
-  - Mention “video link in the description” in the intro.
-
-IMPORTANT ADDITION :
-- Maintain the three CTAs at their spots.
-- Do **not** include these instructions in the script text.
-- Respect the prompt structure.
-- Output only the script text.
+✅ CTA #4 – Subscribe: “And If you love fun stories and art, hit Subscribe so you don’t miss our next video!”
+“See you next time, Friends—bye!” 
 `
     },
     {
@@ -351,99 +359,58 @@ IMPORTANT ADDITION :
       color: 'bg-orange-500',
       borderColor: 'border-orange-500',
       bgLight: 'bg-orange-50',
-      imagePrompt: `Create a musical cartoon coloring page at 1920x1080 pixels (landscape) for children aged 4-8.
+      imagePrompt: `Create a 16:9 cartoon-style illustration based on {TITLE}. Use bold colors, thick outlines, flat simple shapes, and a vibrant kid-friendly look for 6-year-olds. The image is for drawing practice, so keep it clean, clear, and without any text.`,
+      scriptPrompt: `TOPIC: [WHAT WE’RE DRAWING]
 
-Visual Style: Bold line art (2-3px), flat shapes, rounded friendly forms. Cartoon coloring-book aesthetic avoiding gradients and photographic detail.
+🧠 NARRATION STRUCTURE
+- Grade 1 level language: simple, warm, playful, clear.
+- Grade 2 level narration: simple, no complicated twist
+- Tone: casual, enthusiastic -
+- Voice-over only: No detailed description of the drawing process & colors, no "how to draw”
+- Word count: 700 to 800 words max total.
 
-Color Strategy: 4-6 harmonious colors plus black outlines, vivid but soothing tones with strong contrast.
+🎬 1- [Intro | 0:00–0:45]
+Start with: 
+"Hi Friends it’s Mia here! Welcome back to Let’s Draw a SONG"
+Mention what we’re drawing:
+“Today we’re drawing [WHAT WE’RE DRAWING] from the SONG [Song Title]…”  In this video it’s all about [X] & [Y].” 
+“Grab your crayons and paper—let’s draw together! Are you ready? Let’s go!” 
+✅ CTA #1 – Subscribe: “And If you love Drawing and Singing, hit Subscribe so you don’t miss our next video!”
+🎶 “Alright—now here comes [SONG TITLE]! Let’s draw and sing together!”
 
-Composition: Main subject centered, occupying 60-70% of canvas with large readable shapes. Background may include simple musical motifs (notes, waves, instruments) as large, easy-to-color shapes.
-
-Musical Content: Based on {TITLE}, depict cheerful, child-appropriate musical scene (singing animals, kids with instruments, dancing musical elements). Emphasize joyful expressions, clear oversized simple props (guitar, drum, microphone). Avoid crowded scenes, keep elements large with easy-to-fill color areas.
-
-Technical: Exactly 1920x1080px, clean edges, high contrast for printing and line-art conversion. No text unless title explicitly requests it.`,
-      scriptPrompt: `SUNO CHILDREN'S DRAWING SONG - PROMPT TEMPLATE
-
-Title: Let's Draw [Character or Object Name]
-Genre: Children's Pop / Educational
-Mood: [Joyful, Magical, Calm, Playful]
-Tempo: 100 BPM (adjust to 90-120 depending on energy)
-Key: C Major (or G/F Major - good for kids)
-Duration: ~4 minutes
-Vocal Style: Female voice, cheerful and warm - like a friendly cartoon teacher. Includes spoken intro + singing verses.
-Visual Reference (optional but helpful):
-Describe the character, setting, and what the audience sees while listening (e.g. a smiling cartoon moon surrounded by clouds).
-
-Prompt Body:
-A playful and educational kids’ drawing-and-sing-along song, hosted by a cheerful character named Mia. She welcomes children at the start and guides them through drawing a fun object (like a star or rainbow) using simple steps and rhyming lyrics. The music features cheerful piano, light percussion, and sparkly effects. The lyrics encourage creativity and use repetition for easy follow-along. Target age: 3–7 years old.
-
-Lyrics:
-🎤 [Intro – Spoken | 0:00–0:25]
- Hi friends, it’s Mia here! Welcome back to Let’s Draw a Song!
- Today we’re drawing a [friendly/silly/cute] [object name] from the classic nursery rhyme “[SONG TITLE]!”
- This song is all about [X & Y – e.g. shapes and sparkle] — and I can’t wait to show you why this [object] is so fun to draw.
- Grab your crayons and paper — let’s draw together!
- If you love drawing and singing, hit Subscribe so you don’t miss the next one!
- Did you know “[SONG TITLE]” was first published in [YEAR]? That’s over [N] years ago, and it’s still a favorite today!
- 🎶 Alright — here comes “[SONG TITLE]!” Let’s draw and sing together!
-🎵 [Verse 1]
- Let’s draw [OBJECT NAME] big and bright,
- Start with shapes that feel just right!
- Draw a [shape detail], then one more,
- You’re doing great — let’s add some more!
- Line by line, nice and slow,
- Watch our drawing start to grow!
-🎵 [Chorus]
- [SONG TITLE], let’s draw and sing,
- See what joy a shape can bring!
- Colors swirling, bright and fun,
- Drawing stars for everyone!
- Twinkle, sparkle, near and far,
- Now we’ve made our shining star!
-🎵 [Verse 2]
- Add some arms or shiny glow,
- Dots and lines in rows that flow.
- Maybe give it smiling eyes,
- Make it wave up in the skies!
- With each step, your drawing grows,
- Imagination always shows!
-🎵 [Chorus] (repeat with variation)
-🎵 [Bridge]
- Gold or purple, red or blue,
- Any color works for you!
- Fill it in with crayon cheer,
- Happy artists drawing here!
- Drawing’s fun for all to do,
- And we love to sing with you!
-🎵 [Outro Verse]
- Now we’re done — give a cheer,
- You made magic, loud and clear!
- Wave hello to what you drew,
- It’s a star made just by you!
- Let’s keep drawing, don’t delay —
- We’ll be back another day!
-🎵 [Final Chorus]
- [SONG TITLE], shine so bright,
- Thanks for drawing light tonight!
- Grab your crayons, sing once more,
- We’ve got lots of fun in store!
- [SONG TITLE], you’re our guide — 
- Let’s keep drawing side by side!
-
-Arrangement Tips:
-  - Use cheerful piano as main rhythm
-  - Add glockenspiel, triangle, or sparkle sounds on "twinkle"/"shine" lines
-  - Keep tempo steady for step-by-step drawing sync
-  - Support melody with soft bass or ukulele if needed
-  - Chorus can repeat with light variation in lyrics for memory building
-  - Total word count between 700 and 800 words this is critical make sure you are respecting it.
-
-IMPORTANT ADDITION :
-- Total word count between 700 and 800 words this is critical make sure you are respecting it.
-- Keep the song structure and the spoken intro; ensure language is simple and suitable for 3–7 year olds.
-- Do **not** include these instructions in the lyrics or script text.
-- Respect the prompt structure.
-- Output only the script text.
+🎬 2- [SONG | 0:00–9:00]
+Write a KID's song (target audience: 6–8 years old) about [WHAT WE’RE DRAWING] AND/OR with the TITLE [Song Title]
+Style & Tone
+Fun, cool, and catchy for kids—avoid babyish or overly simplistic wording.
+Keep sentences short, rhythmic, and easy to sing.
+Use a nursery rhyme–inspired melody structure (simple patterns, repetition, call-and-response), but age it up slightly so it feels exciting and not too young.
+Use rhyme and rhythm naturally—think singalong quality.
+Core Vocabulary
+Must include: drawing, coloring, draw, color (at least one in each verse or chorus).
+Use words kids easily know (avoid complicated vocabulary).
+Structure & Storytelling
+The lyrics should tell a story through the song
+Start  with song title
+Setup
+Middle:  funny or lighthearted story
+Resolution
+Closing/Chorus: Wrap up with positivity, drawing and coloring
+Musical Flow
+Intro: Fun hook that sets the scene
+Verses: Simple storytelling, each verse adds to the story/ adventure.
+Chorus: Easy to repeat, catchy, singalong—mention “draw” or “color” here.
+Bridge: A playful, slightly different melody (maybe call-and-response)
+Final Chorus/Outro: Big, happy, colorful ending.
+Additional Notes
+Balance story + music so it feels like part song, part storytelling adventure.
+Use repetition and predictable rhymes for memorability.
+Keep it upbeat and positive—kids should feel like they’re part of the hospital adventure.
+Must be 2min30 to 3min long
+👋 3- [OUTRO | 9:30–10:00]
+Congrats: "WOW you did Amazing!"
+Recap: “Today we drew [WHAT WE DREW] and SangTogether.”
+✅ CTA #4 – Subscribe: “And If you love Drawing and Singing, hit Subscribe so you don’t miss our next video on Let’s Draw a SONG!”
+“See you next time, Friends—bye!” 
 `
     }
   ];

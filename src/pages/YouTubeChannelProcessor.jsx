@@ -44,6 +44,7 @@ const YouTubeChannelProcessor = () => {
   const N8N_WEBHOOK_FETCH = import.meta.env.VITE_APP_N8N_WEBHOOK_FETCH;   
   const N8N_WEBHOOK_PROCESS_VIDEO = import.meta.env.VITE_APP_N8N_WEBHOOK_PROCESS_VIDEO;
   const N8N_WEBHOOK_PROCESS_SCRIPT = import.meta.env.VITE_APP_N8N_WEBHOOK_PROCESS_SCRIPT;
+  const SUPADATA_API_KEY = import.meta.env.VITE_APP_SUPADATA_API_KEY; // Added for transcript support
   const GOOGLE_CLIENT_ID = import.meta.env.VITE_APP_GOOGLE_DRIVE_CLIENT_ID;
   const GOOGLE_API_KEY = import.meta.env.VITE_APP_GOOGLE_API_KEY;
   
@@ -539,6 +540,7 @@ Recap: “Today we drew [WHAT WE DREW] and SangTogether.”
     N8N_WEBHOOK_FETCH,
     N8N_WEBHOOK_PROCESS_VIDEO,
     N8N_WEBHOOK_PROCESS_SCRIPT,
+    SUPADATA_API_KEY, // Added for transcript support
     GOOGLE_CLIENT_ID,
     GOOGLE_API_KEY,
     resetAll,
@@ -562,7 +564,7 @@ Recap: “Today we drew [WHAT WE DREW] and SangTogether.”
               Generate coloring images with scripts from YouTube videos
             </p>
             <p className="text-sm text-blue-600 mt-1">
-              ✨ Integrated with N8N Workflows
+              ✨ Integrated with N8N Workflows & Supadata Transcripts
             </p>
           </div>
 

@@ -32,12 +32,21 @@ const ResultsView = ({
       downloadImage(base64Data, filename);
     }
   };
-
+  
   return (
     <div>
       <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">Generated Content</h2>
+          <div>
+            <h2 className="text-2xl font-bold">Generated Content</h2>
+            {processedResults.length > 0 && (
+              <div className="flex items-center mt-2 space-x-4 text-sm text-gray-600">
+                <span>Total: {processedResults.length} videos</span>
+                <span>•</span>
+                <span>With transcripts: {processedResults.filter(v => v.hasTranscript).length}</span>
+              </div>
+            )}
+          </div>
           <button
             onClick={resetAll}
             className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
@@ -50,7 +59,6 @@ const ResultsView = ({
       {processedResults.map((video) => {
         const isExpanded = expandedResults[video.uniqueId];
         const result = video.result;
-        
         return (
           <div key={video.uniqueId} className="bg-white rounded-2xl shadow-lg mb-6 overflow-hidden">
             {/* Result Header */}
@@ -60,9 +68,20 @@ const ResultsView = ({
                   <span className="text-3xl">{video.typeIcon}</span>
                   <div>
                     <h3 className="text-xl font-bold text-gray-900">{video.title}</h3>
-                    <p className="text-sm text-gray-600">
-                      Channel: {video.channelId} • Type: {video.typeName}
-                    </p>
+                    <div className="flex items-center space-x-2 text-sm text-gray-600">
+                      <span>Channel: {video.channelId}</span>
+                      <span>•</span>
+                      <span>Type: {video.typeName}</span>
+                      {video.hasTranscript && (
+                        <>
+                          <span>•</span>
+                          <div className="bg-orange-100 text-orange-600 px-2 py-1 rounded-full text-xs font-medium flex items-center">
+                            <FileText className="w-3 h-3 mr-1" />
+                            Transcript with {video.transcriptWordCount} words
+                          </div>
+                        </>
+                      )}
+                    </div>
                     {video.lastRegenerated && (
                       <p className="text-xs text-blue-600">
                         Last regenerated ({video.lastRegeneratedType}): {new Date(video.lastRegenerated).toLocaleString()}
@@ -113,6 +132,11 @@ const ResultsView = ({
                         <h4 className="font-semibold text-gray-900 flex items-center">
                           <FileText className="w-5 h-5 mr-2" />
                           Script ({result.generatedContent.script.wordCount || 'N/A'} words)
+                          {video.hasTranscript && (
+                            <span className="ml-2 text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full">
+                              Transcript Enhanced
+                            </span>
+                          )}
                         </h4>
                         <button
                           onClick={() => openRegenerateModalWrapper(video, 'script')}

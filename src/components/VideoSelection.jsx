@@ -1,4 +1,4 @@
-import { Play, Eye, Clock, CheckCircle, Plus, X, Video, Link2 } from 'lucide-react';
+import { Play, Eye, Clock, CheckCircle, Plus, X, Video, Link2, FileText } from 'lucide-react';
 
 const VideoSelection = ({
   channelsData,
@@ -183,6 +183,13 @@ const VideoSelection = ({
                 <div key={video.uniqueId} className="bg-white rounded-lg px-3 py-2 flex items-center space-x-2 shadow-sm">
                   <span className="text-xl">{video.typeIcon}</span>
                   <span className="text-sm font-medium text-gray-700 max-w-xs truncate">{video.title}</span>
+                  {/* Transcript indicator */}
+                  {video.hasTranscript && (
+                    <div className="bg-orange-100 text-orange-600 px-2 py-1 rounded-full text-xs font-medium flex items-center">
+                      <FileText className="w-3 h-3 mr-1" />
+                      {video.transcriptWordCount}w
+                    </div>
+                  )}
                   <button
                     onClick={() => removeSelectedVideo(video.uniqueId)}
                     className="text-red-500 hover:text-red-700"
@@ -383,4 +390,4 @@ const VideoSelection = ({
   );
 };
 
-export default VideoSelection;  
+export default VideoSelection;

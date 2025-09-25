@@ -18,7 +18,7 @@ const YouTubeChannelProcessor = () => {
   // State Management
   const [channelUrls, setChannelUrls] = useState(['']);
   const [channelsData, setChannelsData] = useState({});
-  const [selectedVideos, setSelectedVideos] = useState([]);
+  const [selectedVideos, setSelectedVideos] = useState([]);  
   const [processingQueue, setProcessingQueue] = useState([]);
   const [processedResults, setProcessedResults] = useState([]);
   const [loading, setLoading] = useState({});
@@ -46,7 +46,7 @@ const YouTubeChannelProcessor = () => {
   const N8N_WEBHOOK_PROCESS_SCRIPT = import.meta.env.VITE_APP_N8N_WEBHOOK_PROCESS_SCRIPT;
   const GOOGLE_CLIENT_ID = import.meta.env.VITE_APP_GOOGLE_DRIVE_CLIENT_ID;
   const GOOGLE_API_KEY = import.meta.env.VITE_APP_GOOGLE_API_KEY;
-
+  
   // Content types
   const contentTypes = [
     {
@@ -63,14 +63,14 @@ const YouTubeChannelProcessor = () => {
 GOAL:
 Teach some fun and simple lessons while we’re drawing [WHAT WE’RE DRAWING]!
 
-TOPIC: [WHAT WE’RE DRAWING]: 
+MAIN_TOPIC: {MAIN_TOPIC}
 
 🧠 NARRATION STRUCTURE
 - Grade 1 level language: simple, warm, playful, clear.
 - Grade 2 level narration: simple, no complicated twist
 - Tone: casual, enthusiastic -  narration is like chatting with a friend about a fun show you both love.
-- Voice-over only: No detailed description of the drawing process & colors, no "how to draw”
-- Word count: 700 to 800 words max total.
+- Voice-over only: No description of the image drawing & colors, no "step by step how to draw”
+- Word count: 650-800 words max total (this is a very important words must be under 800).
 
 🎬 [Intro | 0:00–0:45]
 Start with: 
@@ -122,7 +122,7 @@ Read the transcript for [VIDEO TITLE] (link: [VIDEO URL]) and write a script tha
 - Grade 2 level narration: simple, no complicated twist
 - Tone: casual, enthusiastic -  narration is like chatting with a friend about a fun show you both love.
 - Voice-over only: No detailed description of the drawing process & colors, no "how to draw”
-- Word count: 700 to 800 words max total.
+- Word count: 650-800 words max total (this is a very important words must be under 800).
 
 
 🎬 [Intro | 0:00–0:45]
@@ -178,7 +178,9 @@ Recap: “Today we drew [WHAT WE DREW] and learned [KEY LESSON].”
       borderColor: 'border-purple-500',
       bgLight: 'bg-purple-50',
       imagePrompt: `Create a 16:9 cartoon-style illustration based on {TITLE}. Use bold colors, thick outlines, flat simple shapes, and a vibrant kid-friendly look for 6-year-olds. The image is for drawing practice, so keep it clean, clear, and without any text.`,
-      scriptPrompt: `MAIN TOPIC:
+      scriptPrompt: `TITLE: {TITLE}
+MAIN_TOPIC: {MAIN_TOPIC} 
+
 Imagine a Story inspired by the [MAIN TOPIC] of the Title, that leads to the [DRAWING MOMENT]
 
 The [MAIN TOPIC] is also the [WHAT WE’RE DRAWING] and [DRAWING MOMENT]
@@ -187,8 +189,8 @@ The [MAIN TOPIC] is also the [WHAT WE’RE DRAWING] and [DRAWING MOMENT]
 Grade 1 level language: simple, warm, playful, clear.
 Grade 1 level narration: simple, no complicated twist
 Tone: casual, enthusiastic -  narration is like chatting with a friend about a fun show you both love.
-Voice-over only: No detailed description of the drawing process & colors, no "how to draw”
-Word count: 700 to 800 words max total.
+Voice-over only: No description of the image drawing & colors, no "step by step how to draw”
+Word count: 650-800 words max total (this is a very important words must be under 800).
 
 🎬 [Intro | 0:00–0:45]
 Start with: 
@@ -249,7 +251,7 @@ Read the transcript for [VIDEO TITLE] (link: [VIDEO URL]) and write a script tha
 - Grade 2 level narration: simple, no complicated twist
 - Tone: casual, enthusiastic -  narration is like chatting with a friend about a fun show you both love.
 - Voice-over only: No detailed description of the drawing process & colors, no "how to draw”
-- Word count: 700 to 800 words max total.
+- Word count: 650-800 words max total (this is a very important words must be under 800).
 
 
 🎬 [Intro | 0:00–0:45]
@@ -313,7 +315,7 @@ Read the transcript for [VIDEO TITLE] (link: [VIDEO URL]) and write a script tha
 - Grade 2 level narration: simple, no complicated twist
 - Tone: casual, enthusiastic -  narration is like chatting with a friend about a fun show you both love.
 - Voice-over only: No detailed description of the drawing process & colors, no "how to draw”
-- Word count: 700 to 800 words max total.
+- Word count: 650-800 words max total (this is a very important words must be under 800).
 
 
 🎬 [Intro | 0:00–0:45]
@@ -369,14 +371,15 @@ Recap: “Today we drew [WHAT WE DREW] and learned [KEY LESSON].”
       borderColor: 'border-orange-500',
       bgLight: 'bg-orange-50',
       imagePrompt: `Create a 16:9 cartoon-style illustration based on {TITLE}. Use bold colors, thick outlines, flat simple shapes, and a vibrant kid-friendly look for 6-year-olds. The image is for drawing practice, so keep it clean, clear, and without any text.`,
-      scriptPrompt: `TOPIC: [WHAT WE’RE DRAWING]
+      scriptPrompt: `MAIN_TOPIC: {MAIN_TOPIC} 
+TITLE: [Song Title]
 
 🧠 NARRATION STRUCTURE
 - Grade 1 level language: simple, warm, playful, clear.
 - Grade 2 level narration: simple, no complicated twist
 - Tone: casual, enthusiastic -
-- Voice-over only: No detailed description of the drawing process & colors, no "how to draw”
-- Word count: 700 to 800 words max total.
+- Voice-over only: No description of the image drawing & colors, no "step by step how to draw”
+- Word count: 650-800 words max total (this is a very important words must be under 800) including song Lyrics
 
 🎬 1- [Intro | 0:00–0:45]
 Start with: 
@@ -539,7 +542,6 @@ Recap: “Today we drew [WHAT WE DREW] and SangTogether.”
     GOOGLE_CLIENT_ID,
     GOOGLE_API_KEY,
     resetAll,
-    // Add the wrapper functions as props
     downloadImage: handleDownloadImage,
     saveToDrive: handleSaveToDrive,
     batchSaveToDrive: handleBatchSaveToDrive,

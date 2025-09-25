@@ -272,7 +272,6 @@ export const regenerateContent = async (
     let response;
     
     if (type === 'image') {
-      // Use N8N_WEBHOOK_PROCESS_VIDEO for image regeneration
       const contentType = contentTypes.find(ct => ct.id === video.selectedType);
       
       response = await fetch(N8N_WEBHOOK_PROCESS_VIDEO, {
@@ -289,7 +288,6 @@ export const regenerateContent = async (
         })
       });
     } else if (type === 'script') {
-      // Use N8N_WEBHOOK_PROCESS_SCRIPT for script regeneration
       const contentType = contentTypes.find(ct => ct.id === video.selectedType);
       const scriptContent = video.result?.generatedContent?.script?.content || '';
 

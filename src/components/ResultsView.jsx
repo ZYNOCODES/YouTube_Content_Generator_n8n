@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Trash2, FileText, Loader2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, Trash2, FileText, Loader2, Download } from 'lucide-react';
 import ImageSlider from './ImageSlider';
 import DriveSaveButton from './DriveSaveButton';
 
@@ -15,7 +15,8 @@ const ResultsView = ({
   isGapiLoaded,
   saveToDrive,
   batchSaveToDrive,
-  resetAll
+  resetAll,
+  saveAllLocally,
 }) => {
   const deleteProcessedVideo = (uniqueId) => {
     setProcessedResults(prev => prev.filter(v => v.uniqueId !== uniqueId));
@@ -47,12 +48,22 @@ const ResultsView = ({
               </div>
             )}
           </div>
-          <button
-            onClick={resetAll}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            Start New Batch
-          </button>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={saveAllLocally}
+              disabled={processedResults.length === 0}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Save All Locally ({processedResults.length})
+            </button>
+            <button
+              onClick={resetAll}
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              Start New Batch
+            </button>
+          </div>
         </div>
       </div>
 

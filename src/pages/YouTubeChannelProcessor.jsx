@@ -11,7 +11,8 @@ import {
   saveToDrive, 
   batchSaveToDrive, 
   openRegenerateModal, 
-  regenerateContent 
+  regenerateContent,
+  saveAllResultsLocally
 } from '../utils/utilityFunctions';
 
 const YouTubeChannelProcessor = () => {
@@ -467,6 +468,11 @@ Recap: “Today we drew [WHAT WE DREW] and SangTogether.”
     setStep('channels');
   };
 
+  const handleSaveAllLocally = () => {
+    saveAllResultsLocally(processedResults, setError);
+  };
+
+
   // Wrapper functions for utility functions
   const handleDownloadImage = (base64Data, filename) => {
     downloadImage(base64Data, filename, setDownloadingImages, setError);
@@ -540,7 +546,7 @@ Recap: “Today we drew [WHAT WE DREW] and SangTogether.”
     N8N_WEBHOOK_FETCH,
     N8N_WEBHOOK_PROCESS_VIDEO,
     N8N_WEBHOOK_PROCESS_SCRIPT,
-    SUPADATA_API_KEY, // Added for transcript support
+    SUPADATA_API_KEY,
     GOOGLE_CLIENT_ID,
     GOOGLE_API_KEY,
     resetAll,
@@ -548,7 +554,8 @@ Recap: “Today we drew [WHAT WE DREW] and SangTogether.”
     saveToDrive: handleSaveToDrive,
     batchSaveToDrive: handleBatchSaveToDrive,
     openRegenerateModal: handleOpenRegenerateModal,
-    regenerateContent: handleRegenerateContent
+    regenerateContent: handleRegenerateContent,
+    saveAllLocally: handleSaveAllLocally,
   };
 
   return (
@@ -556,15 +563,16 @@ Recap: “Today we drew [WHAT WE DREW] and SangTogether.”
       <div className="w-full px-6 py-6">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
+          <img
+           className="bg-white rounded-2xl shadow-lg mb-6 h-52 w-full object-cover"
+           src='/header.jpg'
+           />
           <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 text-center">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-              YouTube Content Generator
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+              Let's Draw Content Generator
             </h1>
-            <p className="text-gray-600">
-              Generate coloring images with scripts from YouTube videos
-            </p>
-            <p className="text-sm text-blue-600 mt-1">
-              ✨ Integrated with N8N Workflows & Supadata Transcripts
+            <p className="text-blue-600 text-sm">
+              Proprietary AI Generated Content Platform
             </p>
           </div>
 

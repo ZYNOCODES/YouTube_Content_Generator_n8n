@@ -346,3 +346,69 @@ export const regenerateContent = async (
     setRegeneratingItems(prev => ({ ...prev, [regenerateId]: false }));
   }
 };
+
+// Save All Results Locally Function
+export const saveAllResultsLocally = async (processedResults, setError) => {
+  if (!processedResults || processedResults.length === 0) {
+    setError('No results to save');
+    return;
+  }
+
+  try {
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+    const mainFolderName = `YouTube_Content_Export_${timestamp}`;
+
+    const JSZip = (await import('jszip')).default;
+    const zip = new JSZip();
+
+    for (let i = 0; i < processedResults.length; i++) {
+      const video = processedResults[i];
+      const videoFolder = zip.folder(`video_${i + 1}_${video.title.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 50)}`);
+
+      if (video.result?.generatedContent?.script?.content) {
+        videoFolder.file('script.txt', video.result.generatedContent.script.content);
+      }
+
+      if (video.result?.generatedContent?.images?.colored?.base64) {
+        const coloredBase64 = video.result.generatedContent.images.colored.base64;
+        videoFolder.file('image_colored.png', coloredBase64, { base64: true });
+      }
+
+      if (video.result?.generatedContent?.images?.blackAndWhite?.base64) {
+        const bwBase64 = video.result.generatedContent.images.blackAndWhite.base64;
+        videoFolder.file('image_blackandwhite.png', bwBase64, { base64: true });
+      }
+
+      // const promptsData = {
+      //   imagePrompt: video.selectedPrompt || '',
+      //   scriptPrompt: video.selectedScriptPrompt || ''
+      // };
+      // videoFolder.file('prompts.txt', 
+      //   `IMAGE PROMPT:\n${promptsData.imagePrompt}\n\n` +
+      //   `SCRIPT PROMPT:\n${promptsData.scriptPrompt}`
+      // );
+    }
+
+    const blob = await zip.generateAsync({ 
+      type: 'blob',
+      compression: 'DEFLATE',
+      compressionOptions: { level: 6 }
+    });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${mainFolderName}.zip`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    console.log(`Successfully exported ${processedResults.length} videos to ${mainFolderName}.zip`);
+
+  } catch (error) {
+    console.error('Error saving results locally:', error);
+    setError(`Failed to save results locally: ${error.message}`);
+    throw error;
+  }
+};

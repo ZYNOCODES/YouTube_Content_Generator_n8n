@@ -16,8 +16,8 @@ const TypeSelectionModal = ({
   if (!showTypeModal) return null;
 
   // Types that require transcripts
-  const typesNeedingTranscript = ['LDST', 'LDYT', 'LDBM', 'LDPP'];
-  const typesNeedingMainTopic = ['LDL', 'LDST', 'LDSO'];
+  const typesNeedingTranscript = ['LDYT', 'LDBM', 'LDPP'];
+  const typesNeedingMainTopic = ['LDST', 'LDL', 'LDST', 'LDSO'];
 
   const fetchTranscriptFromSupadata = async (videoUrl, videoId) => {
     try {
@@ -48,7 +48,6 @@ const TypeSelectionModal = ({
       setTranscriptProgress('Processing video transcript...');
       
       const data = await response.json();
-      console.log('Supadata Transcript response:', data);
       
       // Handle Supadata response format
       if (data && data.content && Array.isArray(data.content)) {
@@ -201,7 +200,6 @@ const TypeSelectionModal = ({
                 <Loader2 className="w-8 h-8 text-blue-600 animate-spin mr-3" />
                 <div className="text-center">
                   <h4 className="text-lg font-semibold text-blue-800 mb-1">Fetching Video Transcript</h4>
-                  <p className="text-blue-600 text-sm">{transcriptProgress}</p>
                 </div>
               </div>
               <div className="bg-blue-100 rounded-lg p-3">
